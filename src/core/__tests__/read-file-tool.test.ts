@@ -25,6 +25,11 @@ jest.mock("../ignore/RooIgnoreController", () => ({
 	},
 }))
 
+// Mocked functions with correct types
+const mockedCountFileLines = countFileLines as jest.MockedFunction<typeof countFileLines>
+const mockedReadLines = readLines as jest.MockedFunction<typeof readLines>
+const mockedExtractTextFromFile = extractTextFromFile as jest.MockedFunction<typeof extractTextFromFile>
+
 describe("read_file tool functionality", () => {
 	// Mock instances
 	const mockCline = {
@@ -70,7 +75,7 @@ describe("read_file tool functionality", () => {
 				type: "tool_use",
 				name: "read_file",
 				params: {
-					args: `:path:src/app.ts\n:start_line:1\n:end_line:100`,
+					args: `<file><path>src/app.ts</path><line_range>1-100</line_range></file>`,
 				},
 				partial: false,
 			}
@@ -103,7 +108,7 @@ describe("read_file tool functionality", () => {
 				type: "tool_use",
 				name: "read_file",
 				params: {
-					args: `:path:src/app.ts\n:start_line:1\n:end_line:50\n======+++======\n:path:src/utils.ts`,
+					args: `<file><path>src/app.ts</path><line_range>1-50</line_range></file><file><path>src/utils.ts</path></file>`,
 				},
 				partial: false,
 			}
@@ -136,11 +141,15 @@ describe("read_file tool functionality", () => {
 		})
 
 		it("should handle invalid line range parameters", async () => {
+			// Setup
+			mockedReadLines.mockRejectedValue(new Error("Invalid line range: invalid values"))
+			mockedExtractTextFromFile.mockRejectedValue(new Error("Invalid line range: invalid values"))
+
 			const toolUse: ReadFileToolUse = {
 				type: "tool_use",
 				name: "read_file",
 				params: {
-					args: `:path:src/app.ts\n:start_line:abc\n:end_line:def`,
+					args: `<file><path>src/app.ts</path><line_range>abc-def</line_range></file>`,
 				},
 				partial: false,
 			}
@@ -159,7 +168,9 @@ describe("read_file tool functionality", () => {
 				(param: string, value: string) => value,
 			)
 
-			expect(result).toBe(`<files><error>Error reading files: Invalid start_line value</error></files>`)
+			expect(result).toBe(
+				`<files>\n<file><path>src/app.ts</path><error>Error reading file: Invalid line range: invalid values</error></file>\n</files>`,
+			)
 		})
 
 		it("should handle empty file entries in multiple file reads", async () => {
@@ -167,7 +178,7 @@ describe("read_file tool functionality", () => {
 				type: "tool_use",
 				name: "read_file",
 				params: {
-					args: `:path:src/app.ts\n======+++======\n\n======+++======\n:path:src/utils.ts`,
+					args: `<file><path>src/app.ts</path></file><file><path>src/utils.ts</path></file>`,
 				},
 				partial: false,
 			}
@@ -198,7 +209,7 @@ describe("read_file tool functionality", () => {
 				type: "tool_use",
 				name: "read_file",
 				params: {
-					args: `:path:smallFile.txt`,
+					args: `<file><path>smallFile.txt</path></file>`,
 				},
 				partial: false,
 			}
@@ -231,7 +242,7 @@ describe("read_file tool functionality", () => {
 				type: "tool_use",
 				name: "read_file",
 				params: {
-					args: `:path:largeFile.txt`,
+					args: `<file><path>largeFile.txt</path></file>`,
 				},
 				partial: false,
 			}
@@ -261,7 +272,7 @@ describe("read_file tool functionality", () => {
 			)
 
 			expect(result).toBe(
-				`<files>\n<file><path>largeFile.txt</path>\n<content lines="1-500">\n1 | Test content</content>\n<notice>Showing only 500 of 5000 total lines. Use start_line and end_line if you need to read more</notice>\n</file>\n</files>`,
+				`<files>\n<file><path>largeFile.txt</path>\n<content lines="1-500">\n1 | Test content</content>\n<notice>Showing only 500 of 5000 total lines. Use line_range if you need to read more lines</notice>\n</file>\n</files>`,
 			)
 		})
 
@@ -270,7 +281,7 @@ describe("read_file tool functionality", () => {
 				type: "tool_use",
 				name: "read_file",
 				params: {
-					args: `:path:binary.pdf`,
+					args: `<file><path>binary.pdf</path></file>`,
 				},
 				partial: false,
 			}
@@ -305,7 +316,7 @@ describe("read_file tool functionality", () => {
 				type: "tool_use",
 				name: "read_file",
 				params: {
-					args: `:path:${filePath}\n:start_line:1\n:end_line:100`,
+					args: `<file><path>${filePath}</path><line_range>1-100</line_range></file>`,
 				},
 				partial: false,
 			}
@@ -367,18 +378,21 @@ describe("read_file tool functionality", () => {
 		})
 
 		it("should handle file read errors", async () => {
+			// Setup
+			mockedCountFileLines.mockRejectedValue(new Error("File not found"))
+			mockedReadLines.mockRejectedValue(new Error("File not found"))
+			mockedExtractTextFromFile.mockRejectedValue(new Error("File not found"))
+
 			const toolUse: ReadFileToolUse = {
 				type: "tool_use",
 				name: "read_file",
 				params: {
-					args: `:path:nonexistent.txt`,
+					args: `<file><path>nonexistent.txt</path></file>`,
 				},
 				partial: false,
 			}
 
 			const { readFileTool } = require("../tools/readFileTool")
-
-			;(countFileLines as jest.Mock).mockRejectedValue(new Error("File not found"))
 
 			let result: string | undefined
 			await readFileTool(
@@ -392,7 +406,9 @@ describe("read_file tool functionality", () => {
 				(param: string, value: string) => value,
 			)
 
-			expect(result).toBe(`<files><error>Error reading files: File not found</error></files>`)
+			expect(result).toBe(
+				`<files>\n<file><path>nonexistent.txt</path><error>Error reading file: File not found</error></file>\n</files>`,
+			)
 		})
 
 		it("should handle line counting errors", async () => {
@@ -400,7 +416,7 @@ describe("read_file tool functionality", () => {
 				type: "tool_use",
 				name: "read_file",
 				params: {
-					args: `:path:error.txt`,
+					args: `<file><path>error.txt</path></file>`,
 				},
 				partial: false,
 			}
@@ -431,7 +447,7 @@ describe("read_file tool functionality", () => {
 				type: "tool_use",
 				name: "read_file",
 				params: {
-					args: `:path:src/code.ts`,
+					args: `<file><path>src/code.ts</path></file>`,
 				},
 				partial: false,
 			}
@@ -465,7 +481,7 @@ describe("read_file tool functionality", () => {
 				type: "tool_use",
 				name: "read_file",
 				params: {
-					args: `:path:huge.log`,
+					args: `<file><path>huge.log</path></file>`,
 				},
 				partial: false,
 			}
@@ -497,7 +513,7 @@ describe("read_file tool functionality", () => {
 				type: "tool_use",
 				name: "read_file",
 				params: {
-					args: `:path:longlines.txt`,
+					args: `<file><path>longlines.txt</path></file>`,
 				},
 				partial: false,
 			}
