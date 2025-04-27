@@ -156,7 +156,7 @@ describe("read_file tool XML output structure", () => {
 			type: "tool_use",
 			name: "read_file",
 			params: {
-				args: params.args ?? `:path:${testFilePath}`,
+				args: params.args ?? `<file><path>${testFilePath}</path></file>`,
 			},
 			partial: false,
 		}
@@ -260,7 +260,7 @@ describe("read_file tool XML output structure", () => {
 
 			// Execute
 			const result = await executeReadFileTool({
-				args: `:path:${testFilePath}\n:start_line:${startLine}\n:end_line:${endLine}`,
+				args: `<file><path>${testFilePath}</path><line_range>${startLine}-${endLine}</line_range></file>`,
 			})
 
 			// Verify
@@ -275,14 +275,14 @@ describe("read_file tool XML output structure", () => {
 			const content = "Line 1\nLine 2\nLine 3"
 			const numberedContent = "1 | Line 1\n2 | Line 2\n3 | Line 3"
 			mockedReadLines.mockResolvedValue(content)
-			mockedExtractTextFromFile.mockResolvedValue(numberedContent)
+			;(addLineNumbers as jest.Mock).mockReturnValue(numberedContent)
 			mockedCountFileLines.mockResolvedValue(endLine)
 			mockProvider.getState.mockResolvedValue({ maxReadFileLine: 500 })
 
 			// Execute
 			const result = await executeReadFileTool(
 				{
-					args: `:path:${testFilePath}\n:end_line:${endLine}`,
+					args: `<file><path>${testFilePath}</path><line_range>1-${endLine}</line_range></file>`,
 				},
 				{ totalLines: endLine },
 			)
@@ -308,7 +308,7 @@ describe("read_file tool XML output structure", () => {
 
 			// Execute
 			const result = await executeReadFileTool({
-				args: `:path:${testFilePath}\n:start_line:${startLine}\n:end_line:${endLine}`,
+				args: `<file><path>${testFilePath}</path><line_range>${startLine}-${endLine}</line_range></file>`,
 			})
 
 			// Verify
@@ -333,15 +333,18 @@ describe("read_file tool XML output structure", () => {
 			mockedExtractTextFromFile.mockRejectedValue(
 				new Error("Invalid line range: end line cannot be less than start line"),
 			)
+			mockedCountFileLines.mockRejectedValue(
+				new Error("Invalid line range: end line cannot be less than start line"),
+			)
 
 			// Execute
 			const result = await executeReadFileTool({
-				args: `:path:${testFilePath}\n:start_line:${startLine}\n:end_line:${endLine}`,
+				args: `<file><path>${testFilePath}</path><line_range>${startLine}-${endLine}</line_range></file>`,
 			})
 
 			// Verify error handling
 			expect(result).toBe(
-				`<files><error>Error reading files: Invalid line range: end line cannot be less than start line</error></files>`,
+				`<files>\n<file><path>${testFilePath}</path><error>Error reading file: Invalid line range: end line cannot be less than start line</error></file>\n</files>`,
 			)
 		})
 
@@ -359,7 +362,7 @@ describe("read_file tool XML output structure", () => {
 			// Execute
 			const result = await executeReadFileTool(
 				{
-					args: `:path:${testFilePath}\n:start_line:${startLine}\n:end_line:${totalLines}`,
+					args: `<file><path>${testFilePath}</path><line_range>${startLine}-${totalLines}</line_range></file>`,
 				},
 				{ totalLines },
 			)
@@ -385,7 +388,7 @@ describe("read_file tool XML output structure", () => {
 
 			// Verify
 			expect(result).toBe(
-				`<files>\n<file><path>${testFilePath}</path>\n<content lines="1-${maxReadFileLine}">\n${(addLineNumbers as jest.Mock)(fileContent.split("\n").slice(0, maxReadFileLine).join("\n"))}</content>\n<notice>Showing only ${maxReadFileLine} of ${totalLines} total lines. Use start_line and end_line if you need to read more</notice>\n</file>\n</files>`,
+				`<files>\n<file><path>${testFilePath}</path>\n<content lines="1-${maxReadFileLine}">\n${(addLineNumbers as jest.Mock)(fileContent.split("\n").slice(0, maxReadFileLine).join("\n"))}</content>\n<notice>Showing only ${maxReadFileLine} of ${totalLines} total lines. Use line_range if you need to read more lines</notice>\n</file>\n</files>`,
 			)
 		})
 
@@ -404,7 +407,7 @@ describe("read_file tool XML output structure", () => {
 
 			// Verify
 			expect(result).toBe(
-				`<files>\n<file><path>${testFilePath}</path>\n<content lines="1-${maxReadFileLine}">\n${numberedContent}</content>\n<list_code_definition_names>${sourceCodeDef.trim()}</list_code_definition_names>\n<notice>Showing only ${maxReadFileLine} of ${totalLines} total lines. Use start_line and end_line if you need to read more</notice>\n</file>\n</files>`,
+				`<files>\n<file><path>${testFilePath}</path>\n<content lines="1-${maxReadFileLine}">\n${numberedContent}</content>\n<list_code_definition_names>${sourceCodeDef.trim()}</list_code_definition_names>\n<notice>Showing only ${maxReadFileLine} of ${totalLines} total lines. Use line_range if you need to read more lines</notice>\n</file>\n</files>`,
 			)
 		})
 
@@ -457,11 +460,13 @@ describe("read_file tool XML output structure", () => {
 
 			// Execute
 			const result = await executeReadFileTool({
-				args: `:path:${testFilePath}\n:start_line:invalid`,
+				args: `<file><path>${testFilePath}</path><line_range>invalid-10</line_range></file>`,
 			})
 
 			// Verify
-			expect(result).toBe(`<files><error>Error reading files: Invalid start_line value</error></files>`)
+			expect(result).toBe(
+				`<files>\n<file><path>${testFilePath}</path><error>Error reading file: Invalid start_line value</error></file>\n</files>`,
+			)
 		})
 
 		it("should include error tag for invalid end_line", async () => {
@@ -471,11 +476,13 @@ describe("read_file tool XML output structure", () => {
 
 			// Execute
 			const result = await executeReadFileTool({
-				args: `:path:${testFilePath}\n:end_line:invalid`,
+				args: `<file><path>${testFilePath}</path><line_range>1-invalid</line_range></file>`,
 			})
 
 			// Verify
-			expect(result).toBe(`<files><error>Error reading files: Invalid end_line value</error></files>`)
+			expect(result).toBe(
+				`<files>\n<file><path>${testFilePath}</path><error>Error reading file: Invalid end_line value</error></file>\n</files>`,
+			)
 		})
 
 		it("should include error tag for RooIgnore error", async () => {
@@ -531,7 +538,7 @@ describe("read_file tool XML output structure", () => {
 			// Execute
 			const result = await executeReadFileTool(
 				{
-					args: `:path:${file1Path}\n======+++======\n:path:${file2Path}`,
+					args: `<file><path>${file1Path}</path></file><file><path>${file2Path}</path></file>`,
 				},
 				{ totalLines: 1 },
 			)
@@ -616,7 +623,7 @@ describe("read_file tool XML output structure", () => {
 				type: "tool_use",
 				name: "read_file",
 				params: {
-					args: `:path:${validPath}\n======+++======\n:path:${invalidPath}`,
+					args: `<file><path>${validPath}</path></file><file><path>${invalidPath}</path></file>`,
 				},
 				partial: false,
 			}
@@ -676,7 +683,7 @@ describe("read_file tool XML output structure", () => {
 			// Execute
 			const result = await executeReadFileTool(
 				{
-					args: `:path:${textPath}\n======+++======\n:path:${binaryPath}`,
+					args: `<file><path>${textPath}</path></file><file><path>${binaryPath}</path></file>`,
 				},
 				{ totalLines: 1 },
 			)
@@ -749,7 +756,9 @@ describe("read_file tool XML output structure", () => {
 			const result = await executeReadFileTool({})
 
 			// Verify
-			expect(result).toBe(`<files><error>Error reading files: ${errorMessage}</error></files>`)
+			expect(result).toBe(
+				`<files>\n<file><path>${testFilePath}</path><error>Error reading file: ${errorMessage}</error></file>\n</files>`,
+			)
 			expect(result).not.toContain(`<content`)
 		})
 
@@ -772,7 +781,7 @@ describe("read_file tool XML output structure", () => {
 
 			// Execute
 			const result = await executeReadFileTool({
-				args: `:path:${longPath}`,
+				args: `<file><path>${longPath}</path></file>`,
 			})
 
 			// Verify long path is handled correctly
