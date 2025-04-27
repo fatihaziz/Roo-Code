@@ -152,13 +152,11 @@ describe("read_file tool with maxReadFileLine setting", () => {
 		;(addLineNumbers as jest.Mock).mockClear()
 
 		// Format args string based on params
-		let argsContent = `:path:${params.path || testFilePath}`
-		if (params.start_line) {
-			argsContent += `\n:start_line:${params.start_line}`
+		let argsContent = `<file><path>${params.path || testFilePath}</path>`
+		if (params.start_line && params.end_line) {
+			argsContent += `<line_range>${params.start_line}-${params.end_line}</line_range>`
 		}
-		if (params.end_line) {
-			argsContent += `\n:end_line:${params.end_line}`
-		}
+		argsContent += `</file>`
 
 		const toolUse: ReadFileToolUse = {
 			type: "tool_use",
@@ -327,7 +325,7 @@ describe("read_file tool with maxReadFileLine setting", () => {
 
 			// Verify XML structure
 			expect(result).toBe(
-				`<files>\n<file><path>${testFilePath}</path>\n<content lines="1-3">\n1 | Line 1\n2 | Line 2\n3 | Line 3</content>\n<list_code_definition_names>${sourceCodeDef.trim()}</list_code_definition_names>\n<notice>Showing only 3 of 5 total lines. Use start_line and end_line if you need to read more</notice>\n</file>\n</files>`,
+				`<files>\n<file><path>${testFilePath}</path>\n<content lines="1-3">\n1 | Line 1\n2 | Line 2\n3 | Line 3</content>\n<list_code_definition_names>${sourceCodeDef.trim()}</list_code_definition_names>\n<notice>Showing only 3 of 5 total lines. Use line_range if you need to read more lines</notice>\n</file>\n</files>`,
 			)
 		})
 
@@ -436,7 +434,7 @@ describe("read_file tool with maxReadFileLine setting", () => {
 
 			// Verify
 			expect(result).toBe(
-				`<files>\n<file><path>${testFilePath}</path>\n<content lines="1-${maxReadFileLine}">\n1 | Line 1\n2 | Line 2\n3 | Line 3</content>\n<list_code_definition_names>${sourceCodeDef.trim()}</list_code_definition_names>\n<notice>Showing only ${maxReadFileLine} of ${totalLines} total lines. Use start_line and end_line if you need to read more</notice>\n</file>\n</files>`,
+				`<files>\n<file><path>${testFilePath}</path>\n<content lines="1-${maxReadFileLine}">\n1 | Line 1\n2 | Line 2\n3 | Line 3</content>\n<list_code_definition_names>${sourceCodeDef.trim()}</list_code_definition_names>\n<notice>Showing only ${maxReadFileLine} of ${totalLines} total lines. Use line_range if you need to read more lines</notice>\n</file>\n</files>`,
 			)
 		})
 
@@ -612,7 +610,7 @@ describe("read_file tool with maxReadFileLine setting", () => {
 			expect(mockedReadLines).toHaveBeenCalled()
 			expect(mockedExtractTextFromFile).not.toHaveBeenCalled()
 			expect(result).toBe(
-				`<files>\n<file><path>${testFilePath}</path>\n<content lines="1-${maxReadFileLine}">\n${numberedContent}\n</content>\n<notice>Showing only ${maxReadFileLine} of ${totalLines} total lines. Use start_line and end_line if you need to read more</notice>\n</file>\n</files>`,
+				`<files>\n<file><path>${testFilePath}</path>\n<content lines="1-${maxReadFileLine}">\n${numberedContent}\n</content>\n<notice>Showing only ${maxReadFileLine} of ${totalLines} total lines. Use line_range if you need to read more lines</notice>\n</file>\n</files>`,
 			)
 		})
 
@@ -634,7 +632,7 @@ describe("read_file tool with maxReadFileLine setting", () => {
 
 			// Should handle long lines without issues
 			expect(result).toBe(
-				`<files>\n<file><path>${testFilePath}</path>\n<content lines="1-${maxReadFileLine}">\n${numberedLine}\n</content>\n<notice>Showing only ${maxReadFileLine} of 5 total lines. Use start_line and end_line if you need to read more</notice>\n</file>\n</files>`,
+				`<files>\n<file><path>${testFilePath}</path>\n<content lines="1-${maxReadFileLine}">\n${numberedLine}\n</content>\n<notice>Showing only ${maxReadFileLine} of 5 total lines. Use line_range if you need to read more lines</notice>\n</file>\n</files>`,
 			)
 		})
 	})
