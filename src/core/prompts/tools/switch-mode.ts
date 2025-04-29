@@ -1,9 +1,11 @@
 export function getSwitchModeDescription(): string {
 	return `## switch_mode
-Description: Request to switch to a different mode. This tool allows modes to request switching to another mode when needed, such as switching to Code mode to make code changes. The user must approve the mode switch.
+Description: Request to switch to a different mode. Allows modes to request switching when needed (e.g., to Code mode for changes). User must approve.
 Parameters:
-- mode_slug: (required) The slug of the mode to switch to (e.g., "code", "ask", "architect")
-- reason: (optional) The reason for switching modes
+| Parameter | Type   | Required | Description |
+|-----------|--------|----------|-------------|
+| mode_slug | string | Yes      | Slug of mode to switch to (e.g., "code", "ask", "architect"). |
+| reason    | string | Optional | Reason for switching modes. |
 Usage:
 <switch_mode>
 <mode_slug>Mode slug here</mode_slug>
@@ -14,5 +16,6 @@ Example: Requesting to switch to code mode
 <switch_mode>
 <mode_slug>code</mode_slug>
 <reason>Need to make code changes</reason>
-</switch_mode>`
+</switch_mode>
+`
 }

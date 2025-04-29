@@ -7,8 +7,10 @@ export function getAccessMcpResourceDescription(args: ToolArgs): string | undefi
 	return `## access_mcp_resource
 Description: Request to access a resource provided by a connected MCP server. Resources represent data sources that can be used as context, such as files, API responses, or system information.
 Parameters:
-- server_name: (required) The name of the MCP server providing the resource
-- uri: (required) The URI identifying the specific resource to access
+| Parameter   | Type    | Required | Description |
+|-------------|---------|----------|-------------|
+| server_name | string  | Yes      | The name of the MCP server providing the resource |
+| uri         | string  | Yes      | The URI identifying the specific resource to access |
 Usage:
 <access_mcp_resource>
 <server_name>server name here</server_name>
@@ -20,5 +22,6 @@ Example: Requesting to access an MCP resource
 <access_mcp_resource>
 <server_name>weather-server</server_name>
 <uri>weather://san-francisco/current</uri>
-</access_mcp_resource>`
+</access_mcp_resource>
+`
 }
