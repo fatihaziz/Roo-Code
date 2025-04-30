@@ -56,5 +56,10 @@ Examples:
 </args>
 </read_file>
 
-Note: Line ranges enable efficient streaming of specific portions from large files like logs or datasets.`
+IMPORTANT: You MUST use this Efficient Reading Strategy:
+- You MUST read all related files and implementations together in a single operation
+- You MUST obtain all necessary context before proceeding with changes
+- You MUST combine adjacent line ranges (<10 lines apart)
+- You MUST use multiple ranges for content separated by >10 lines
+- You MUST include sufficient line context for planned modifications while keeping ranges minimal`
 }
