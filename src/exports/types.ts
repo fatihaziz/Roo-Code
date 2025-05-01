@@ -106,6 +106,7 @@ type ProviderSettings = {
 	geminiApiKey?: string | undefined
 	googleGeminiBaseUrl?: string | undefined
 	openAiNativeApiKey?: string | undefined
+	openAiNativeBaseUrl?: string | undefined
 	mistralApiKey?: string | undefined
 	mistralCodestralUrl?: string | undefined
 	deepSeekBaseUrl?: string | undefined
@@ -210,6 +211,7 @@ type GlobalSettings = {
 	maxWorkspaceFiles?: number | undefined
 	showRooIgnoredFiles?: boolean | undefined
 	maxReadFileLine?: number | undefined
+	maxConcurrentFileReads?: number | undefined
 	terminalOutputLineLimit?: number | undefined
 	terminalShellIntegrationTimeout?: number | undefined
 	terminalShellIntegrationDisabled?: boolean | undefined

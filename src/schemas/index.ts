@@ -401,6 +401,7 @@ export const providerSettingsSchema = z.object({
 	googleGeminiBaseUrl: z.string().optional(),
 	// OpenAI Native
 	openAiNativeApiKey: z.string().optional(),
+	openAiNativeBaseUrl: z.string().optional(),
 	// Mistral
 	mistralApiKey: z.string().optional(),
 	mistralCodestralUrl: z.string().optional(),
@@ -492,6 +493,7 @@ const providerSettingsRecord: ProviderSettingsRecord = {
 	googleGeminiBaseUrl: undefined,
 	// OpenAI Native
 	openAiNativeApiKey: undefined,
+	openAiNativeBaseUrl: undefined,
 	// Mistral
 	mistralApiKey: undefined,
 	mistralCodestralUrl: undefined,
@@ -569,6 +571,7 @@ export const globalSettingsSchema = z.object({
 	maxWorkspaceFiles: z.number().optional(),
 	showRooIgnoredFiles: z.boolean().optional(),
 	maxReadFileLine: z.number().optional(),
+	maxConcurrentFileReads: z.number().optional(),
 
 	terminalOutputLineLimit: z.number().optional(),
 	terminalShellIntegrationTimeout: z.number().optional(),
@@ -647,6 +650,7 @@ const globalSettingsRecord: GlobalSettingsRecord = {
 	maxWorkspaceFiles: undefined,
 	showRooIgnoredFiles: undefined,
 	maxReadFileLine: undefined,
+	maxConcurrentFileReads: undefined,
 
 	terminalOutputLineLimit: undefined,
 	terminalShellIntegrationTimeout: undefined,
