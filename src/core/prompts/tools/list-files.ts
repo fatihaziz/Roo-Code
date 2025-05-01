@@ -2,12 +2,10 @@ import { ToolArgs } from "./types"
 
 export function getListFilesDescription(args: ToolArgs): string {
 	return `## list_files
-Description: List files and directories in a specified directory. Recursive or top-level only. Do not use to confirm newly created files.
+Description: Request to list files and directories within the specified directory. If recursive is true, it will list all files and directories recursively. If recursive is false or not provided, it will only list the top-level contents. Do not use this tool to confirm the existence of files you may have created, as the user will let you know if the files were created successfully or not.
 Parameters:
-| Parameter | Type    | Required | Description |
-|-----------|---------|----------|-------------|
-| path      | string  | Yes      | Directory path (relative to ${args.cwd}). |
-| recursive | boolean | Optional | true for recursive, false/omit for top-level. |
+- path: (required) The path of the directory to list contents for (relative to the current workspace directory ${args.cwd})
+- recursive: (optional) Whether to list files recursively. Use true for recursive listing, false or omit for top-level only.
 Usage:
 <list_files>
 <path>Directory path here</path>
@@ -18,6 +16,5 @@ Example: Requesting to list all files in the current directory
 <list_files>
 <path>.</path>
 <recursive>false</recursive>
-</list_files>
-`
+</list_files>`
 }

@@ -1,68 +1,65 @@
 import { ToolArgs } from "./types"
 
 export function getReadFileDescription(args: ToolArgs): string {
-  return `## TOOL: read_file
+	return `## read_file
+Description: Request to read the contents of one or more files. The tool outputs line-numbered content (e.g. "1 | const x = 1") for easy reference when creating diffs or discussing code. Use line ranges to efficiently read specific portions of large files. Supports text extraction from PDF and DOCX files, but may not handle other binary files properly.
 
-| Field       | Type     | Required | Description                                                             |
-|-------------|----------|----------|-------------------------------------------------------------------------|
-| path        | string   | yes        | File path, relative to workspace (${args.cwd})                          |
-| line_range  | string[] | optional        | One or more "start-end" line ranges (inclusive, 1-based). Optional.     |
+Parameters:
+- args: Contains one or more file elements, where each file contains:
+  - path: (required) File path (relative to workspace directory ${args.cwd})
+  - line_range: (optional) One or more line range elements in format "start-end" (1-based, inclusive)
 
-Line-numbered output (e.g., "1 | const x = 1"). Use line ranges to read selectively. Supports PDF/DOCX text extraction. May break with other binary types.
-
-### Usage Format:
+Usage:
 <read_file>
-  <args>
-    <file>
-      <path>...</path>
-      <line_range>start-end</line_range>   <!-- Optional, repeatable -->
-    </file>
-    ...
-  </args>
+<args>
+  <file>
+    <path>path/to/file</path>
+    <line_range>1-100</line_range>
+    <line_range>200-300</line_range>
+  </file>
+</args>
 </read_file>
 
-### Examples:
-1. **Single file, one range**
+Examples:
+
+1. Reading a single file with one line range:
 <read_file>
-  <args>
-    <file>
-      <path>src/app.ts</path>
-      <line_range>1-1000</line_range>
-    </file>
-  </args>
+<args>
+  <file>
+    <path>src/app.ts</path>
+    <line_range>1-1000</line_range>
+  </file>
+</args>
 </read_file>
 
-2. **Multi-file, varied ranges**
+2. Reading multiple files with different line ranges:
 <read_file>
-  <args>
-    <file>
-      <path>src/app.ts</path>
-      <line_range>1-50</line_range>
-      <line_range>100-150</line_range>
-    </file>
-    <file>
-      <path>src/utils.ts</path>
-      <line_range>10-20</line_range>
-    </file>
-  </args>
+<args>
+  <file>
+    <path>src/app.ts</path>
+    <line_range>1-50</line_range>
+    <line_range>100-150</line_range>
+  </file>
+  <file>
+    <path>src/utils.ts</path>
+    <line_range>10-20</line_range>
+  </file>
+</args>
 </read_file>
 
-3. **Full file (omit range)**
+3. Reading an entire file (omitting line ranges):
 <read_file>
-  <args>
-    <file>
-      <path>config.json</path>
-    </file>
-  </args>
+<args>
+  <file>
+    <path>config.json</path>
+  </file>
+</args>
 </read_file>
 
-### Reading Strategy Rules
-| Rule # | Enforcement                                                                               |
-|--------|--------------------------------------------------------------------------------------------|
-| 1      | Read all relevant files/impls together in a **single operation**                          |
-| 2      | Gather all required context **before** any change                                         |
-| 3      | Merge adjacent line ranges if gap ≤ 10                                                    |
-| 4      | Use separate line_range if content separated by >10 lines                                |
-| 5      | Minimize ranges while ensuring enough context for edits                                   |
-`
+IMPORTANT: You MUST use this Efficient Reading Strategy:
+- You MUST read all related files and implementations together in a single operation
+- You MUST obtain all necessary context before proceeding with changes
+- You MUST combine adjacent line ranges (<10 lines apart)
+- You MUST use multiple ranges for content separated by >10 lines
+- You MUST include sufficient line context for planned modifications while keeping ranges minimal`
 }
