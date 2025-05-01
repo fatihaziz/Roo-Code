@@ -856,6 +856,11 @@ export const webviewMessageHandler = async (provider: ClineProvider, message: We
 			await updateGlobalState("maxReadFileLine", message.value)
 			await provider.postStateToWebview()
 			break
+		case "maxConcurrentFileReads":
+			const valueToSave = message.value // Capture the value intended for saving
+			await updateGlobalState("maxConcurrentFileReads", valueToSave)
+			await provider.postStateToWebview()
+			break
 		case "setHistoryPreviewCollapsed": // Add the new case handler
 			await updateGlobalState("historyPreviewCollapsed", message.bool ?? false)
 			// No need to call postStateToWebview here as the UI already updated optimistically
@@ -1273,6 +1278,7 @@ const generateSystemPrompt = async (provider: ClineProvider, message: WebviewMes
 		enableMcpServerCreation,
 		browserToolEnabled,
 		language,
+		maxConcurrentFileReads,
 	} = await provider.getState()
 
 	const diffStrategy = new MultiSearchReplaceDiffStrategy(fuzzyMatchThreshold)
@@ -1320,6 +1326,9 @@ const generateSystemPrompt = async (provider: ClineProvider, message: WebviewMes
 		enableMcpServerCreation,
 		language,
 		rooIgnoreInstructions,
+		{
+			maxConcurrentFileReads,
+		},
 	)
 
 	return systemPrompt
