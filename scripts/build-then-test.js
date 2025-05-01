@@ -1,10 +1,9 @@
 // build-then-test.js
 // Cross-platform Node.js script to build, package, and test Roo Code VSCode extension in isolated instance.
 
-const { execSync, spawnSync } = require("child_process")
+const { execSync, spawnSync, spawn } = require("child_process")
 const fs = require("fs")
 const path = require("path")
-const os = require("os")
 
 // Helper to run commands and throw on failure
 function run(command, opts = {}) {
@@ -69,7 +68,7 @@ if (installResult.status !== 0) {
 // 6. Launch VS Code for development with the isolated user data directory
 console.log("Step 6: Launching isolated VS Code instance for development...")
 const devArgs = ["--extensionDevelopmentPath", cwd, "--user-data-dir", isolatedUserDataDir]
-spawnSync(codeCmd, devArgs, { stdio: "inherit" })
+spawn(codeCmd, devArgs, { shell: true })
 
 console.log("Isolated VS Code instance launched. Test your extension there.")
 console.log("Build and test script finished.")

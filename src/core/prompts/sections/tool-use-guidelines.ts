@@ -11,5 +11,6 @@ export function getToolUseGuidelinesSection(): string {
 - CRITICAL: Use TOOL for EVERY response.
 - CRITICAL: NEVER call attempt_completion until ALL relevant files are modified.
 - CRITICAL: ALWAYS provide COMPLETE file content with write_to_file.
+- CRITICAL: For large file writes, you MUST process the file in memory, apply all required modifications precisely, and provide the full, unabridged content in the write_to_file tool. NO summarization, NO truncation, NO placeholders or comments indicating omitted code are permitted. Every line must be present.
 - Obey these RULES for every step.`
 }
