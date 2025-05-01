@@ -11,29 +11,49 @@ Parameters:
 | end_line   | int    | Optional | Ending line (1-based, inclusive). Reads to end if omitted. |
 Usage:
 <read_file>
-<path>File path here</path>
-<start_line>Starting line number (optional)</start_line>
-<end_line>Ending line number (optional)</end_line>
+<args>
+  <file>
+    <path>path/to/file</path>
+    <line_range>1-100</line_range>
+    <line_range>200-300</line_range>
+  </file>
+</args>
 </read_file>
 
 Examples:
 
-1. Reading an entire file:
+1. Reading a single file with one line range:
 <read_file>
-<path>frontend-config.json</path>
+<args>
+  <file>
+    <path>src/app.ts</path>
+    <line_range>1-1000</line_range>
+  </file>
+</args>
 </read_file>
 
-2. Reading the first 1000 lines of a large log file:
+2. Reading multiple files with different line ranges:
 <read_file>
-<path>logs/application.log</path>
-<end_line>1000</end_line>
+<args>
+  <file>
+    <path>src/app.ts</path>
+    <line_range>1-50</line_range>
+    <line_range>100-150</line_range>
+  </file>
+  <file>
+    <path>src/utils.ts</path>
+    <line_range>10-20</line_range>
+  </file>
+</args>
 </read_file>
 
-3. Reading lines 500-1000 of a CSV file:
+3. Reading an entire file (omitting line ranges):
 <read_file>
-<path>data/large-dataset.csv</path>
-<start_line>500</start_line>
-<end_line>1000</end_line>
+<args>
+  <file>
+    <path>config.json</path>
+  </file>
+</args>
 </read_file>
 
 4. Reading a specific function in a source file:
