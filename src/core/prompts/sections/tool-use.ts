@@ -1,14 +1,11 @@
 export function getSharedToolUseSection(): string {
 	return `====
 # TOOL USE
-| # | Rule |
-|---|------|
-| 1 | Every reply must use exactly 1 TOOL per reply |
-| 2 | Format: XML tags, tool name as tag, params as subtags |
-| 3 | Example: <read_file><path>src/main.js</path></read_file> |
-| 4 | Wait for user result |
-| 5 | Only TOOL XML output |
-| 6 | CRITICAL: NEVER stop until complete ALL relevant files modifications before \`attempt_completion\`
-
-Strictly adhere to this format for all responses.`
+- CRITICAL: You MUST use exactly 1 TOOL per reply.
+- MANDATORY: Format is XML tags, TOOL name as tag, params as subtags.
+- Example: <read_file><path>src/main.js</path></read_file>
+- EFFICIENT: Wait for user result before next TOOL. No extra output.
+- Output ONLY TOOL XML, nothing else.
+- CRITICAL: NEVER call attempt_completion until ALL relevant files are modified.
+Strictly adhere to these RULES for every response.`
 }
