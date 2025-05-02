@@ -5,11 +5,11 @@ export function getInsertContentDescription(args: ToolArgs): string {
 Description: Add new lines to a file without modifying existing content. Specify line number (1-based), 0 to append. Ideal for imports, functions, blocks, log entries.
 
 Parameters:
-| Field   | Required | Description                                                 |
-|---------|----------|-------------------------------------------------------------|
-| path    | Yes      | File path relative to workspace ${args.cwd.toPosix()}       |
-| line    | Yes      | Line number to insert before (1-based), 0 to append at end. |
-| content | Yes      | Content to insert.                                          |
+| Field | Required | Description |
+| - | - | - |
+| path | Yes | File path relative to workspace ${args.cwd.toPosix()} |
+| line | Yes | Line number to insert before (1-based), 0 to append at end. |
+| content | Yes | Content to insert. |
 
 Example: Insert imports at start
 <insert_content>

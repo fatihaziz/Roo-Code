@@ -2,10 +2,10 @@ export function getAskFollowupQuestionDescription(): string {
 	return `## ask_followup_question
 Description: Ask user for needed info. Use when ambiguous, need clarification, or more details. Enables interactive problem-solving. Use judiciously to balance info gathering and efficiency.
 Parameters:
-| Field     | Required | Description                                                                 |
-|-----------|----------|-----------------------------------------------------------------------------|
-| question  | Yes      | Clear, specific question for needed information.                            |
-| follow_up | Yes      | 2-4 suggested answers in <suggest> tags. Specific, actionable, complete answers. NO placeholders. |
+| Field | Required | Description |
+| - | - | - |
+| question | Yes | Clear, specific question for needed information. |
+| follow_up | Yes | 2-4 suggested answers in <suggest> tags. Specific, actionable, complete answers. NO placeholders. |
 Usage:
 <ask_followup_question>
 <question>Your question here</question>

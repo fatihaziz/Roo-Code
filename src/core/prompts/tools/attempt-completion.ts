@@ -5,9 +5,9 @@ Description: Present final task result after confirming all tool uses succeeded.
 **CRITICAL**: You MUST confirm prior TOOL success via user response before using attempt_completion. Failure risks code corruption. MANDATORY: Verify confirmation in <thinking> before proceeding. DO NOT use this tool otherwise.
 
 Parameters:
-| Field   | Required | Description                                                                 |
-|---------|----------|-----------------------------------------------------------------------------|
-| result  | Yes      | Final task result description. No questions/offers.                         |
+| Field | Required | Description |
+| - | - | - |
+| result | Yes | Final task result description. No questions/offers. |
 | command | Optional | CLI command to demo result (e.g., \`open index.html\`). NOT \`echo\`/\`cat\`. Valid for OS. |
 
 Usage:

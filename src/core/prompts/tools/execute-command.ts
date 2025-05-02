@@ -12,10 +12,10 @@ Description: Execute a CLI command on the system for operations or task steps.
 5.  **Working Directory:** Use \`cwd\` param ONLY if user explicitly directs a different execution directory. Default is workspace root (${args.cwd}).
 
 Parameters:
-| Field   | Required | Description                                                                 |
-|---------|----------|-----------------------------------------------------------------------------|
-| command | Yes      | CLI command. MUST be valid for OS. No harmful instructions.                 |
-| cwd     | Optional | Working directory (default: ${args.cwd}). Use only when directed.           |
+| Field | Required | Description |
+| - | - | - |
+| command | Yes | CLI command. MUST be valid for OS. No harmful instructions. |
+| cwd | Optional | Working directory (default: ${args.cwd}). Use only when directed. |
 
 Usage:
 <execute_command>

@@ -13,13 +13,13 @@ Description: Interact with Puppeteer browser. Each action (except \`close\`) ret
 4.  **Clicks:** Target element CENTER based on screenshot coordinates.
 
 Parameters:
-| Field      | Required | Description                                                                 | Example                               |
-|------------|----------|-----------------------------------------------------------------------------|---------------------------------------|
-| action     | Yes      | One of: launch, hover, click, type, resize, scroll_down, scroll_up, close | \`<action>launch</action>\`             |
-| url        | Optional | URL for \`launch\`. MUST be valid (http://, file:///). Required by \`launch\`. | \`<url>http://localhost:3000</url>\`   |
+| Field | Required | Description | Example |
+| - | - | - | - |
+| action | Yes | One of: launch, hover, click, type, resize, scroll_down, scroll_up, close | \`<action>launch</action>\` |
+| url | Optional | URL for \`launch\`. MUST be valid (http://, file:///). Required by \`launch\`. | \`<url>http://localhost:3000</url>\` |
 | coordinate | Optional | x,y for \`click\`, \`hover\`. Within ${args.browserViewportSize}. Required by \`click\`, \`hover\`. | \`<coordinate>450,300</coordinate>\` |
-| size       | Optional | w,h for \`resize\`. Required by \`resize\`.                               | \`<size>1280,720</size>\`              |
-| text       | Optional | String for \`type\`. Required by \`type\`. Use after clicking input field. | \`<text>Input text</text>\`            |
+| size | Optional | w,h for \`resize\`. Required by \`resize\`. | \`<size>1280,720</size>\` |
+| text | Optional | String for \`type\`. Required by \`type\`. Use after clicking input field. | \`<text>Input text</text>\` |
 
 Usage:
 <browser_action>
