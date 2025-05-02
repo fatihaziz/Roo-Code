@@ -111,7 +111,7 @@ describe("read_file tool XML output structure", () => {
 			validateAccess: jest.fn().mockReturnValue(true),
 		}
 		mockCline.say = jest.fn().mockResolvedValue(undefined)
-		mockCline.ask = jest.fn().mockResolvedValue(true)
+		mockCline.ask = jest.fn().mockResolvedValue({ response: "yesButtonClicked" })
 		mockCline.presentAssistantMessage = jest.fn()
 		mockCline.sayAndCreateMissingParamError = jest.fn().mockResolvedValue("Missing required parameter")
 		// Add mock for getFileContextTracker method
@@ -120,6 +120,7 @@ describe("read_file tool XML output structure", () => {
 		})
 		mockCline.recordToolUsage = jest.fn().mockReturnValue(undefined)
 		mockCline.recordToolError = jest.fn().mockReturnValue(undefined)
+		mockCline.didRejectTool = false
 
 		// Reset tool result
 		toolResult = undefined
@@ -611,8 +612,11 @@ describe("read_file tool XML output structure", () => {
 				return Promise.reject(new Error("File not found"))
 			})
 
-			// Mock approval to always succeed since RooIgnore handles access
-			mockCline.ask = jest.fn().mockResolvedValue(true)
+			// Mock approval for both files
+			mockCline.ask = jest
+				.fn()
+				.mockResolvedValueOnce({ response: "yesButtonClicked" }) // First file approved
+				.mockResolvedValueOnce({ response: "noButtonClicked" }) // Second file denied
 
 			// Execute - Skip the default validateAccess mock
 			const { readFileTool } = require("../tools/readFileTool")
@@ -654,7 +658,7 @@ describe("read_file tool XML output structure", () => {
 
 			// Verify result
 			expect(result).toBe(
-				`<files>\n<file><path>${invalidPath}</path><error>${formatResponse.rooIgnoreError(invalidPath)}</error></file>\n<file><path>${validPath}</path>\n<content lines="1-1">\n${numberedContent}</content>\n</file>\n</files>`,
+				`<files>\n<file><path>${validPath}</path>\n<content lines="1-1">\n${numberedContent}</content>\n</file>\n<file><path>${invalidPath}</path><error>${formatResponse.rooIgnoreError(invalidPath)}</error></file>\n</files>`,
 			)
 		})
 
