@@ -35,6 +35,8 @@ interface FileResult {
 	notice?: string
 	lineRanges?: LineRange[]
 	xmlContent?: string // Final XML content for this file
+	feedbackText?: string // User feedback text from approval/denial
+	feedbackImages?: any[] // User feedback images from approval/denial
 }
 
 export async function readFileTool(
@@ -211,14 +213,32 @@ export async function readFileTool(
 					reason: lineSnippet,
 				} satisfies ClineSayTool)
 
-				const didApprove = await askApproval("tool", completeMessage)
-				if (!didApprove) {
+				const { response, text, images } = await cline.ask("tool", completeMessage, false)
+
+				if (response !== "yesButtonClicked") {
+					// Handle both messageResponse and noButtonClicked with text
+					if (text) {
+						await cline.say("user_feedback", text, images)
+					}
+					cline.didRejectTool = true
+
 					updateFileResult(relPath, {
 						status: "denied",
 						xmlContent: `<file><path>${relPath}</path><status>Denied by user</status></file>`,
+						feedbackText: text,
+						feedbackImages: images,
 					})
 				} else {
-					updateFileResult(relPath, { status: "approved" })
+					// Handle yesButtonClicked with text
+					if (text) {
+						await cline.say("user_feedback", text, images)
+					}
+
+					updateFileResult(relPath, {
+						status: "approved",
+						feedbackText: text,
+						feedbackImages: images,
+					})
 				}
 			}
 		}
@@ -320,9 +340,51 @@ export async function readFileTool(
 
 		// Generate final XML result from all file results
 		const xmlResults = fileResults.filter((result) => result.xmlContent).map((result) => result.xmlContent)
+		const filesXml = `<files>\n${xmlResults.join("\n")}\n</files>`
 
-		// Push combined results
-		pushToolResult(`<files>\n${xmlResults.join("\n")}\n</files>`)
+		// Process all feedback in a unified way without branching
+		let statusMessage = ""
+		let feedbackImages: any[] = []
+
+		// Handle denial with feedback (highest priority)
+		const deniedWithFeedback = fileResults.find((result) => result.status === "denied" && result.feedbackText)
+
+		if (deniedWithFeedback && deniedWithFeedback.feedbackText) {
+			statusMessage = formatResponse.toolDeniedWithFeedback(deniedWithFeedback.feedbackText)
+			feedbackImages = deniedWithFeedback.feedbackImages || []
+		}
+		// Handle generic denial
+		else if (cline.didRejectTool) {
+			statusMessage = formatResponse.toolDenied()
+		}
+		// Handle approval with feedback
+		else {
+			const approvedWithFeedback = fileResults.find(
+				(result) => result.status === "approved" && result.feedbackText,
+			)
+
+			if (approvedWithFeedback && approvedWithFeedback.feedbackText) {
+				statusMessage = formatResponse.toolApprovedWithFeedback(approvedWithFeedback.feedbackText)
+				feedbackImages = approvedWithFeedback.feedbackImages || []
+			}
+		}
+
+		// Push the result with appropriate formatting
+		if (statusMessage) {
+			const result = formatResponse.toolResult(statusMessage, feedbackImages)
+
+			// Handle different return types from toolResult
+			if (typeof result === "string") {
+				pushToolResult(`${result}\n${filesXml}`)
+			} else {
+				// For block-based results, we need to convert the filesXml to a text block and append it
+				const textBlock = { type: "text" as const, text: filesXml }
+				pushToolResult([...result, textBlock])
+			}
+		} else {
+			// No status message, just push the files XML
+			pushToolResult(filesXml)
+		}
 	} catch (error) {
 		// Handle all errors using per-file format for consistency
 		const relPath = fileEntries[0]?.path || "unknown"
