@@ -39,6 +39,8 @@ Always adhere to this format for the tool use to ensure proper parsing and execu
 ## read_file
 Description: Request to read the contents of one or more files. The tool outputs line-numbered content (e.g. "1 | const x = 1") for easy reference when creating diffs or discussing code. Use line ranges to efficiently read specific portions of large files. Supports text extraction from PDF and DOCX files, but may not handle other binary files properly.
 
+
+
 Parameters:
 - args: Contains one or more file elements, where each file contains:
   - path: (required) File path (relative to workspace directory /test/path)
@@ -97,6 +99,7 @@ IMPORTANT: You MUST use this Efficient Reading Strategy:
 - You MUST combine adjacent line ranges (<10 lines apart)
 - You MUST use multiple ranges for content separated by >10 lines
 - You MUST include sufficient line context for planned modifications while keeping ranges minimal
+
 
 ## fetch_instructions
 Description: Request to fetch instructions to perform a task
@@ -533,6 +536,8 @@ Always adhere to this format for the tool use to ensure proper parsing and execu
 ## read_file
 Description: Request to read the contents of one or more files. The tool outputs line-numbered content (e.g. "1 | const x = 1") for easy reference when creating diffs or discussing code. Use line ranges to efficiently read specific portions of large files. Supports text extraction from PDF and DOCX files, but may not handle other binary files properly.
 
+
+
 Parameters:
 - args: Contains one or more file elements, where each file contains:
   - path: (required) File path (relative to workspace directory /test/path)
@@ -591,6 +596,7 @@ IMPORTANT: You MUST use this Efficient Reading Strategy:
 - You MUST combine adjacent line ranges (<10 lines apart)
 - You MUST use multiple ranges for content separated by >10 lines
 - You MUST include sufficient line context for planned modifications while keeping ranges minimal
+
 
 ## fetch_instructions
 Description: Request to fetch instructions to perform a task
@@ -1027,6 +1033,8 @@ Always adhere to this format for the tool use to ensure proper parsing and execu
 ## read_file
 Description: Request to read the contents of one or more files. The tool outputs line-numbered content (e.g. "1 | const x = 1") for easy reference when creating diffs or discussing code. Use line ranges to efficiently read specific portions of large files. Supports text extraction from PDF and DOCX files, but may not handle other binary files properly.
 
+
+
 Parameters:
 - args: Contains one or more file elements, where each file contains:
   - path: (required) File path (relative to workspace directory /test/path)
@@ -1085,6 +1093,7 @@ IMPORTANT: You MUST use this Efficient Reading Strategy:
 - You MUST combine adjacent line ranges (<10 lines apart)
 - You MUST use multiple ranges for content separated by >10 lines
 - You MUST include sufficient line context for planned modifications while keeping ranges minimal
+
 
 ## fetch_instructions
 Description: Request to fetch instructions to perform a task
@@ -1521,6 +1530,8 @@ Always adhere to this format for the tool use to ensure proper parsing and execu
 ## read_file
 Description: Request to read the contents of one or more files. The tool outputs line-numbered content (e.g. "1 | const x = 1") for easy reference when creating diffs or discussing code. Use line ranges to efficiently read specific portions of large files. Supports text extraction from PDF and DOCX files, but may not handle other binary files properly.
 
+
+
 Parameters:
 - args: Contains one or more file elements, where each file contains:
   - path: (required) File path (relative to workspace directory /test/path)
@@ -1579,6 +1590,7 @@ IMPORTANT: You MUST use this Efficient Reading Strategy:
 - You MUST combine adjacent line ranges (<10 lines apart)
 - You MUST use multiple ranges for content separated by >10 lines
 - You MUST include sufficient line context for planned modifications while keeping ranges minimal
+
 
 ## fetch_instructions
 Description: Request to fetch instructions to perform a task
@@ -2071,6 +2083,8 @@ Always adhere to this format for the tool use to ensure proper parsing and execu
 ## read_file
 Description: Request to read the contents of one or more files. The tool outputs line-numbered content (e.g. "1 | const x = 1") for easy reference when creating diffs or discussing code. Use line ranges to efficiently read specific portions of large files. Supports text extraction from PDF and DOCX files, but may not handle other binary files properly.
 
+
+
 Parameters:
 - args: Contains one or more file elements, where each file contains:
   - path: (required) File path (relative to workspace directory /test/path)
@@ -2129,6 +2143,7 @@ IMPORTANT: You MUST use this Efficient Reading Strategy:
 - You MUST combine adjacent line ranges (<10 lines apart)
 - You MUST use multiple ranges for content separated by >10 lines
 - You MUST include sufficient line context for planned modifications while keeping ranges minimal
+
 
 ## fetch_instructions
 Description: Request to fetch instructions to perform a task
@@ -2633,6 +2648,8 @@ Always adhere to this format for the tool use to ensure proper parsing and execu
 ## read_file
 Description: Request to read the contents of one or more files. The tool outputs line-numbered content (e.g. "1 | const x = 1") for easy reference when creating diffs or discussing code. Use line ranges to efficiently read specific portions of large files. Supports text extraction from PDF and DOCX files, but may not handle other binary files properly.
 
+
+
 Parameters:
 - args: Contains one or more file elements, where each file contains:
   - path: (required) File path (relative to workspace directory /test/path)
@@ -2691,6 +2708,7 @@ IMPORTANT: You MUST use this Efficient Reading Strategy:
 - You MUST combine adjacent line ranges (<10 lines apart)
 - You MUST use multiple ranges for content separated by >10 lines
 - You MUST include sufficient line context for planned modifications while keeping ranges minimal
+
 
 ## fetch_instructions
 Description: Request to fetch instructions to perform a task
@@ -3183,6 +3201,8 @@ Always adhere to this format for the tool use to ensure proper parsing and execu
 ## read_file
 Description: Request to read the contents of one or more files. The tool outputs line-numbered content (e.g. "1 | const x = 1") for easy reference when creating diffs or discussing code. Use line ranges to efficiently read specific portions of large files. Supports text extraction from PDF and DOCX files, but may not handle other binary files properly.
 
+
+
 Parameters:
 - args: Contains one or more file elements, where each file contains:
   - path: (required) File path (relative to workspace directory /test/path)
@@ -3241,6 +3261,7 @@ IMPORTANT: You MUST use this Efficient Reading Strategy:
 - You MUST combine adjacent line ranges (<10 lines apart)
 - You MUST use multiple ranges for content separated by >10 lines
 - You MUST include sufficient line context for planned modifications while keeping ranges minimal
+
 
 ## fetch_instructions
 Description: Request to fetch instructions to perform a task
@@ -3767,6 +3788,8 @@ Always adhere to this format for the tool use to ensure proper parsing and execu
 ## read_file
 Description: Request to read the contents of one or more files. The tool outputs line-numbered content (e.g. "1 | const x = 1") for easy reference when creating diffs or discussing code. Use line ranges to efficiently read specific portions of large files. Supports text extraction from PDF and DOCX files, but may not handle other binary files properly.
 
+
+
 Parameters:
 - args: Contains one or more file elements, where each file contains:
   - path: (required) File path (relative to workspace directory /test/path)
@@ -3825,6 +3848,7 @@ IMPORTANT: You MUST use this Efficient Reading Strategy:
 - You MUST combine adjacent line ranges (<10 lines apart)
 - You MUST use multiple ranges for content separated by >10 lines
 - You MUST include sufficient line context for planned modifications while keeping ranges minimal
+
 
 ## fetch_instructions
 Description: Request to fetch instructions to perform a task
@@ -4303,6 +4327,8 @@ Always adhere to this format for the tool use to ensure proper parsing and execu
 ## read_file
 Description: Request to read the contents of one or more files. The tool outputs line-numbered content (e.g. "1 | const x = 1") for easy reference when creating diffs or discussing code. Use line ranges to efficiently read specific portions of large files. Supports text extraction from PDF and DOCX files, but may not handle other binary files properly.
 
+
+
 Parameters:
 - args: Contains one or more file elements, where each file contains:
   - path: (required) File path (relative to workspace directory /test/path)
@@ -4361,6 +4387,7 @@ IMPORTANT: You MUST use this Efficient Reading Strategy:
 - You MUST combine adjacent line ranges (<10 lines apart)
 - You MUST use multiple ranges for content separated by >10 lines
 - You MUST include sufficient line context for planned modifications while keeping ranges minimal
+
 
 ## fetch_instructions
 Description: Request to fetch instructions to perform a task
@@ -4874,6 +4901,8 @@ Always adhere to this format for the tool use to ensure proper parsing and execu
 ## read_file
 Description: Request to read the contents of one or more files. The tool outputs line-numbered content (e.g. "1 | const x = 1") for easy reference when creating diffs or discussing code. Use line ranges to efficiently read specific portions of large files. Supports text extraction from PDF and DOCX files, but may not handle other binary files properly.
 
+
+
 Parameters:
 - args: Contains one or more file elements, where each file contains:
   - path: (required) File path (relative to workspace directory /test/path)
@@ -4932,6 +4961,7 @@ IMPORTANT: You MUST use this Efficient Reading Strategy:
 - You MUST combine adjacent line ranges (<10 lines apart)
 - You MUST use multiple ranges for content separated by >10 lines
 - You MUST include sufficient line context for planned modifications while keeping ranges minimal
+
 
 ## fetch_instructions
 Description: Request to fetch instructions to perform a task
@@ -5359,6 +5389,8 @@ Always adhere to this format for the tool use to ensure proper parsing and execu
 ## read_file
 Description: Request to read the contents of one or more files. The tool outputs line-numbered content (e.g. "1 | const x = 1") for easy reference when creating diffs or discussing code. Use line ranges to efficiently read specific portions of large files. Supports text extraction from PDF and DOCX files, but may not handle other binary files properly.
 
+
+
 Parameters:
 - args: Contains one or more file elements, where each file contains:
   - path: (required) File path (relative to workspace directory /test/path)
@@ -5417,6 +5449,7 @@ IMPORTANT: You MUST use this Efficient Reading Strategy:
 - You MUST combine adjacent line ranges (<10 lines apart)
 - You MUST use multiple ranges for content separated by >10 lines
 - You MUST include sufficient line context for planned modifications while keeping ranges minimal
+
 
 ## fetch_instructions
 Description: Request to fetch instructions to perform a task
@@ -5761,6 +5794,8 @@ Always adhere to this format for the tool use to ensure proper parsing and execu
 ## read_file
 Description: Request to read the contents of one or more files. The tool outputs line-numbered content (e.g. "1 | const x = 1") for easy reference when creating diffs or discussing code. Use line ranges to efficiently read specific portions of large files. Supports text extraction from PDF and DOCX files, but may not handle other binary files properly.
 
+
+
 Parameters:
 - args: Contains one or more file elements, where each file contains:
   - path: (required) File path (relative to workspace directory /test/path)
@@ -5819,6 +5854,7 @@ IMPORTANT: You MUST use this Efficient Reading Strategy:
 - You MUST combine adjacent line ranges (<10 lines apart)
 - You MUST use multiple ranges for content separated by >10 lines
 - You MUST include sufficient line context for planned modifications while keeping ranges minimal
+
 
 ## fetch_instructions
 Description: Request to fetch instructions to perform a task
