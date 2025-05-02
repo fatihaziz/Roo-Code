@@ -2,16 +2,16 @@ import { ToolArgs } from "./types"
 
 export function getInsertContentDescription(args: ToolArgs): string {
 	return `## insert_content
-Description: Use this tool specifically for adding new lines of content into a file without modifying existing content. Specify the line number to insert before, or use line 0 to append to the end. Ideal for adding imports, functions, configuration blocks, log entries, or any multi-line text block.
+Description: Add new lines to a file without modifying existing content. Specify line number (1-based), 0 to append. Ideal for imports, functions, blocks, log entries.
 
 Parameters:
-- path: (required) File path relative to workspace directory ${args.cwd.toPosix()}
-- line: (required) Line number where content will be inserted (1-based)
-	      Use 0 to append at end of file
-	      Use any positive number to insert before that line
-- content: (required) The content to insert at the specified line
+| Field   | Required | Description                                                 |
+|---------|----------|-------------------------------------------------------------|
+| path    | Yes      | File path relative to workspace ${args.cwd.toPosix()}       |
+| line    | Yes      | Line number to insert before (1-based), 0 to append at end. |
+| content | Yes      | Content to insert.                                          |
 
-Example for inserting imports at start of file:
+Example: Insert imports at start
 <insert_content>
 <path>src/utils.ts</path>
 <line>1</line>
@@ -21,7 +21,7 @@ import { sum } from './math';
 </content>
 </insert_content>
 
-Example for appending to the end of file:
+Example: Append to end
 <insert_content>
 <path>src/utils.ts</path>
 <line>0</line>

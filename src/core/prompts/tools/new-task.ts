@@ -2,11 +2,13 @@ import { ToolArgs } from "./types"
 
 export function getNewTaskDescription(_args: ToolArgs): string {
 	return `## new_task
-Description: Create a new task with a specified starting mode and initial message. This tool instructs the system to create a new Cline instance in the given mode with the provided message.
+Description: Create a new task instance. Instructs system to start a new Cline instance with specified mode and initial message.
 
 Parameters:
-- mode: (required) The slug of the mode to start the new task in (e.g., "code", "ask", "architect").
-- message: (required) The initial user message or instructions for this new task.
+| Field   | Required | Description                                         |
+|---------|----------|-----------------------------------------------------|
+| mode    | Yes      | Mode slug for new task (e.g., "code", "ask").       |
+| message | Yes      | Initial user message/instructions for the new task. |
 
 Usage:
 <new_task>
@@ -14,10 +16,10 @@ Usage:
 <message>Your initial instructions here</message>
 </new_task>
 
-Example:
+Example: Start new 'code' task
 <new_task>
 <mode>code</mode>
-<message>Implement a new feature for the application.</message>
+<message>Implement feature X.</message>
 </new_task>
 `
 }

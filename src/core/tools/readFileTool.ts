@@ -407,17 +407,3 @@ export async function readFileTool(
 		pushToolResult(`<files>\n${xmlResults.join("\n")}\n</files>`)
 	}
 }
-
-// Error handling function
-async function handleFileError(
-	error: unknown,
-	relPath: string,
-	isOnlyFile: boolean,
-	results: string[],
-	handleError: HandleError,
-): Promise<void> {
-	const errorMsg = error instanceof Error ? error.message : String(error)
-	// Always use per-file error format for consistency
-	results.push(`<file><path>${relPath}</path><error>Error reading file: ${errorMsg}</error></file>`)
-	await handleError(`reading file ${relPath}`, error instanceof Error ? error : new Error(errorMsg))
-}
