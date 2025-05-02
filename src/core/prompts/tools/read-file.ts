@@ -1,10 +1,11 @@
 import { ToolArgs } from "./types"
 
 export function getReadFileDescription(args: ToolArgs): string {
+	const maxFiles = args.settings?.maxConcurrentFileReads ?? 7 // Default to 7 if not set
 	return `## read_file
 Description: Request to read the contents of one or more files. The tool outputs line-numbered content (e.g. "1 | const x = 1") for easy reference when creating diffs or discussing code. Use line ranges to efficiently read specific portions of large files. Supports text extraction from PDF and DOCX files, but may not handle other binary files properly.
 
-${args.settings?.maxConcurrentFileReads ? `**IMPORTANT: You can read a maximum of ${args.settings?.maxConcurrentFileReads} files in a single request.** If you need to read more files, use multiple sequential read_file requests.` : ""}
+**IMPORTANT: You can read a maximum of ${maxFiles} files in a single request.** If you need to read more files, use multiple sequential read_file requests.
 
 Parameters:
 - args: Contains one or more file elements, where each file contains:
@@ -34,7 +35,7 @@ Examples:
 </args>
 </read_file>
 
-2. Reading multiple files with different line ranges${args.settings?.maxConcurrentFileReads ? ` (within the ${args.settings?.maxConcurrentFileReads}-file limit)` : ""}:
+2. Reading multiple files with different line ranges (within the ${maxFiles}-file limit):
 <read_file>
 <args>
   <file>
@@ -59,10 +60,10 @@ Examples:
 </read_file>
 
 IMPORTANT: You MUST use this Efficient Reading Strategy:
-- You MUST read all related files and implementations together in a single operation${args.settings?.maxConcurrentFileReads ? ` (up to ${args.settings?.maxConcurrentFileReads} files at once)` : ""}
+- You MUST read all related files and implementations together in a single operation (up to ${maxFiles} files at once)
 - You MUST obtain all necessary context before proceeding with changes
 - You MUST combine adjacent line ranges (<10 lines apart)
 - You MUST use multiple ranges for content separated by >10 lines
 - You MUST include sufficient line context for planned modifications while keeping ranges minimal
-${args.settings?.maxConcurrentFileReads ? `- When you need to read more than ${args.settings?.maxConcurrentFileReads} files, prioritize the most critical files first, then use subsequent read_file requests for additional files` : ""}`
+- When you need to read more than ${maxFiles} files, prioritize the most critical files first, then use subsequent read_file requests for additional files`
 }
