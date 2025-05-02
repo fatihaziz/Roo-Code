@@ -5,10 +5,10 @@ export function getNewTaskDescription(_args: ToolArgs): string {
 Description: Create a new task instance. Instructs system to start a new Cline instance with specified mode and initial message.
 
 Parameters:
-| Field   | Required | Description                                         |
-|---------|----------|-----------------------------------------------------|
-| mode    | Yes      | Mode slug for new task (e.g., "code", "ask").       |
-| message | Yes      | Initial user message/instructions for the new task. |
+| Field | Required | Description |
+| - | - | - |
+| mode | Yes | Mode slug for new task (e.g., "code", "ask"). |
+| message | Yes | Initial user message/instructions for the new task. |
 
 Usage:
 <new_task>

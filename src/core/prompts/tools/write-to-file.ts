@@ -10,11 +10,11 @@ Description: Write full content to a file. Overwrites if exists, creates if not.
 3.  Accurate Line Count: The \`line_count\` MUST reflect the total lines in the provided \`content\`, including empty lines.
 
 Parameters:
-| Parameter   | Type   | Required | Description                                                 |
-|----|----|----|----|
-| path        | string | Yes      | File path (relative to workspace ${args.cwd}). MUST be relative. |
-| content     | string | Yes      | COMPLETE file content. No truncation. NO line numbers.      |
-| line_count  | int    | Yes      | Total lines, including empty ones.                          |
+| Parameter | Type | Required | Description |
+| - | - | - | - |
+| path | string | Yes | File path (relative to workspace ${args.cwd}). MUST be relative. |
+| content | string | Yes | COMPLETE file content. No truncation. NO line numbers. |
+| line_count | int | Yes | Total lines, including empty ones. |
 
 Usage:
 <write_to_file>

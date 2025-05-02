@@ -3,10 +3,10 @@ export function getSwitchModeDescription(): string {
 Description: Request to switch to a different mode. Allows modes to request switching when needed (e.g., to Code mode for changes). User MUST approve the switch.
 
 Parameters:
-| Field     | Required | Description                                         |
-|-----------|----------|-----------------------------------------------------|
-| mode_slug | Yes      | Slug of target mode (e.g., "code", "ask").          |
-| reason    | Optional | Justification for switching modes.                  |
+| Field | Required | Description |
+| - | - | - |
+| mode_slug | Yes | Slug of target mode (e.g., "code", "ask"). |
+| reason | Optional | Justification for switching modes. |
 
 Usage:
 <switch_mode>

@@ -5,19 +5,19 @@ export function getSearchAndReplaceDescription(args: ToolArgs): string {
 Description: Find and replace text/patterns (regex) in a file. Targeted replacements across multiple locations. Supports literal/regex, case sensitivity, optional line ranges. Shows diff preview.
 
 **Required Parameters:**
-| Field   | Type   | Description                                                 |
-|---------|--------|-------------------------------------------------------------|
-| path    | string | File path (relative to workspace ${args.cwd.toPosix()}). MUST be relative. |
-| search  | string | Text or pattern to search for.                              |
-| replace | string | Text to replace matches with.                               |
+| Field | Type | Description |
+| - | - | - |
+| path | string | File path (relative to workspace ${args.cwd.toPosix()}). MUST be relative. |
+| search | string | Text or pattern to search for. |
+| replace | string | Text to replace matches with. |
 
 **Optional Parameters:**
-| Field       | Type    | Description                                             | Default |
-|-------------|---------|---------------------------------------------------------|---------|
-| start_line  | int     | Starting line for restricted replacement (1-based).     | N/A     |
-| end_line    | int     | Ending line for restricted replacement (1-based).       | N/A     |
-| use_regex   | boolean | "true" to treat search as regex.                        | false   |
-| ignore_case | boolean | "true" for case-insensitive matching.                   | false   |
+| Field | Type | Description | Default |
+| - | - | - | - |
+| start_line | int | Starting line for restricted replacement (1-based). | N/A |
+| end_line | int | Ending line for restricted replacement (1-based). | N/A |
+| use_regex | boolean | "true" to treat search as regex. | false |
+| ignore_case | boolean | "true" for case-insensitive matching. | false |
 
 **Notes:**
 - \`use_regex=true\`: \`search\` is treated as regex.

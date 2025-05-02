@@ -8,10 +8,10 @@ Description: Read file contents. Outputs line-numbered text. Use line ranges for
 **CRITICAL**: Max ${maxFiles} files per request. Use sequential calls if more needed.
 
 Parameters:
-| Field       | Type     | Required | Description                                                             |
-|-------------|----------|----------|-------------------------------------------------------------------------|
-| path        | string   | yes        | File path, relative to workspace (${args.cwd})                          |
-| line_range  | string[] | optional        | One or more "start-end" line ranges (inclusive, 1-based). Optional.     |
+| Field | Type | Required | Description |
+| - | - | - | - |
+| path | string | yes | File path, relative to workspace (${args.cwd}) |
+| line_range | string[] | optional | One or more "start-end" line ranges (inclusive, 1-based). Optional. |
 
 Usage Format:
 <read_file>
@@ -33,12 +33,12 @@ Examples:
 <read_file><args><file><path>config.json</path></file></args></read_file>
 
 **MANDATORY Reading Strategy Rules:**
-| Rule # | Enforcement                                                                               |
-|--------|--------------------------------------------------------------------------------------------|
-| 1      | Read all relevant files/impls together in a **single operation** (up to ${maxFiles})          |
-| 2      | Gather all required context **before** any change                                         |
-| 3      | Merge adjacent line ranges if gap ≤ 10                                                    |
-| 4      | Use separate line_range if content separated by >10 lines                                |
-| 5      | Minimize ranges while ensuring enough context for edits                                   |
-| 6      | If > ${maxFiles} files needed, prioritize critical ones first, read others sequentially. |`
+| Rule # | Enforcement |
+| - | - |
+| 1 | Read all relevant files/impls together in a **single operation** (up to ${maxFiles}) |
+| 2 | Gather all required context **before** any change |
+| 3 | Merge adjacent line ranges if gap ≤ 10 |
+| 4 | Use separate line_range if content separated by >10 lines |
+| 5 | Minimize ranges while ensuring enough context for edits |
+| 6 | If > ${maxFiles} files needed, prioritize critical ones first, read others sequentially. |`
 }

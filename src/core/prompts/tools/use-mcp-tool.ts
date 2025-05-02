@@ -7,11 +7,11 @@ export function getUseMcpToolDescription(args: ToolArgs): string | undefined {
 Description: Execute a tool from a connected MCP server. Each server offers tools with specific capabilities and input schemas.
 
 Parameters:
-| Field       | Required | Description                                                         |
-|-------------|----------|---------------------------------------------------------------------|
-| server_name | Yes      | MCP server name.                                                    |
-| tool_name   | Yes      | Tool name to execute on the specified server.                       |
-| arguments   | Yes      | JSON object containing tool input parameters, matching tool schema. |
+| Field | Required | Description |
+| - | - | - |
+| server_name | Yes | MCP server name. |
+| tool_name | Yes | Tool name to execute on the specified server. |
+| arguments | Yes | JSON object containing tool input parameters, matching tool schema. |
 
 Usage:
 <use_mcp_tool>
