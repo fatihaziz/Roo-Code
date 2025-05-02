@@ -115,13 +115,14 @@ describe("read_file tool with maxReadFileLine setting", () => {
 			validateAccess: jest.fn().mockReturnValue(true),
 		}
 		mockCline.say = jest.fn().mockResolvedValue(undefined)
-		mockCline.ask = jest.fn().mockResolvedValue(true)
+		mockCline.ask = jest.fn().mockResolvedValue({ response: "yesButtonClicked" })
 		mockCline.presentAssistantMessage = jest.fn()
 		mockCline.getFileContextTracker = jest.fn().mockReturnValue({
 			trackFileContext: jest.fn().mockResolvedValue(undefined),
 		})
 		mockCline.recordToolUsage = jest.fn().mockReturnValue(undefined)
 		mockCline.recordToolError = jest.fn().mockReturnValue(undefined)
+		mockCline.didRejectTool = false
 		// Reset tool result
 		toolResult = undefined
 	})
@@ -257,6 +258,7 @@ describe("read_file tool with maxReadFileLine setting", () => {
 		it("should return an empty content with source code definitions", async () => {
 			// Setup - for maxReadFileLine = 0, the implementation won't call readLines
 			mockedParseSourceCodeDefinitionsForFile.mockResolvedValue(sourceCodeDef)
+			mockedCountFileLines.mockResolvedValue(5)
 
 			// Execute - skip addLineNumbers check as it's not called for maxReadFileLine=0
 			const result = await executeReadFileTool(
@@ -286,6 +288,7 @@ describe("read_file tool with maxReadFileLine setting", () => {
 			// Setup
 			mockedIsBinaryFile.mockResolvedValue(true)
 			mockedParseSourceCodeDefinitionsForFile.mockResolvedValue("")
+			mockedCountFileLines.mockResolvedValue(0)
 
 			// Execute
 			const result = await executeReadFileTool({}, { maxReadFileLine: 0 })
