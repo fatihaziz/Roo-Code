@@ -43,7 +43,7 @@ describe("read_file tool functionality", () => {
 			validateAccess: jest.fn().mockReturnValue(true),
 		},
 		say: jest.fn().mockResolvedValue(undefined),
-		ask: jest.fn().mockResolvedValue(true),
+		ask: jest.fn().mockResolvedValue({ response: "yesButtonClicked" }),
 		presentAssistantMessage: jest.fn(),
 		getFileContextTracker: jest.fn().mockReturnValue({
 			trackFileContext: jest.fn().mockResolvedValue(undefined),
@@ -52,21 +52,36 @@ describe("read_file tool functionality", () => {
 		recordToolError: jest.fn(),
 		sayAndCreateMissingParamError: jest.fn().mockResolvedValue("Missing required parameter"),
 		consecutiveMistakeCount: 0,
+		didRejectTool: false,
 	}
 
 	beforeEach(() => {
 		jest.clearAllMocks()
 		mockCline.consecutiveMistakeCount = 0
+		mockCline.didRejectTool = false
+
+		// Setup default mocks
 		;(extractTextFromFile as jest.Mock).mockImplementation(() => Promise.resolve("Test content"))
 		;(readLines as jest.Mock).mockImplementation(() => Promise.resolve("Test content"))
-		;(addLineNumbers as jest.Mock).mockImplementation((text, startLine = 1) => {
+		;(addLineNumbers as jest.Mock).mockImplementation((text: string) => {
+			if (!text) return ""
 			return text
 				.split("\n")
-				.map((line: string, i: number) => `${startLine + i} | ${line}`)
+				.map((line: string, i: number) => `${i + 1} | ${line}`)
 				.join("\n")
 		})
 		;(isBinaryFile as jest.Mock).mockResolvedValue(false)
 		;(parseSourceCodeDefinitionsForFile as jest.Mock).mockResolvedValue("")
+		mockCline.ask.mockResolvedValue({
+			response: "yesButtonClicked",
+			text: "Looks good!",
+			images: ["image1.png"],
+		})
+
+		// Reset mock implementations
+		;(extractTextFromFile as jest.Mock).mockClear()
+		;(readLines as jest.Mock).mockClear()
+		;(addLineNumbers as jest.Mock).mockClear()
 	})
 
 	describe("Args Parameter Format", () => {
@@ -473,6 +488,203 @@ describe("read_file tool functionality", () => {
 				`<files>\n<file><path>src/code.ts</path><error>Error reading file: Parser error</error></file>\n</files>`,
 			)
 		})
+
+		describe("User Feedback Handling", () => {
+			it("should handle approval with feedback", async () => {
+				const toolUse: ReadFileToolUse = {
+					type: "tool_use",
+					name: "read_file",
+					params: {
+						args: `<file><path>src/app.ts</path></file>`,
+					},
+					partial: false,
+				}
+
+				const { readFileTool } = require("../tools/readFileTool")
+
+				;(countFileLines as jest.Mock).mockResolvedValue(10)
+				;(readLines as jest.Mock).mockResolvedValue("Test content")
+				;(addLineNumbers as jest.Mock).mockReturnValue("1 | Test content")
+				mockCline.ask.mockResolvedValueOnce({
+					response: "yesButtonClicked",
+					text: "Looks good!",
+					images: ["image1.png"],
+				})
+
+				let result: string | undefined
+				await readFileTool(
+					mockCline,
+					toolUse,
+					mockCline.ask,
+					jest.fn(),
+					(r: string) => {
+						result = r
+					},
+					(param: string, value: string) => value,
+				)
+
+				const expectedXml = `<files>\n<file><path>src/app.ts</path>\n<content lines="1-10">\n1 | Test content</content>\n</file>\n</files>`
+				expect(result).toBe(
+					`The tool was approved with feedback:\n<feedback>\nLooks good!\n</feedback>\n${expectedXml}`,
+				)
+				expect(mockCline.say).toHaveBeenCalledWith("user_feedback", "Looks good!", ["image1.png"])
+			})
+
+			it("should handle denial with feedback", async () => {
+				const toolUse: ReadFileToolUse = {
+					type: "tool_use",
+					name: "read_file",
+					params: {
+						args: `<file><path>src/app.ts</path></file>`,
+					},
+					partial: false,
+				}
+
+				const { readFileTool } = require("../tools/readFileTool")
+
+				mockCline.ask.mockResolvedValueOnce({
+					response: "noButtonClicked",
+					text: "Not allowed",
+					images: ["image2.png"],
+				})
+
+				let result: string | undefined
+				await readFileTool(
+					mockCline,
+					toolUse,
+					mockCline.ask,
+					jest.fn(),
+					(r: string) => {
+						result = r
+					},
+					(param: string, value: string) => value,
+				)
+
+				const expectedXml = `<files>\n<file><path>src/app.ts</path><status>Denied by user</status></file>\n</files>`
+				expect(result).toBe(
+					`The user denied this operation and provided the following feedback:\n<feedback>\nNot allowed\n</feedback>\n${expectedXml}`,
+				)
+				expect(mockCline.say).toHaveBeenCalledWith("user_feedback", "Not allowed", ["image2.png"])
+				expect(mockCline.didRejectTool).toBe(true)
+			})
+		})
+
+		describe("Invalid Line Range Validation", () => {
+			it("should handle end line less than start line", async () => {
+				const toolUse: ReadFileToolUse = {
+					type: "tool_use",
+					name: "read_file",
+					params: {
+						args: `<file><path>src/app.ts</path><line_range>10-5</line_range></file>`,
+					},
+					partial: false,
+				}
+
+				const { readFileTool } = require("../tools/readFileTool")
+
+				;(countFileLines as jest.Mock).mockResolvedValue(10)
+				;(readLines as jest.Mock).mockRejectedValue(
+					new Error("Invalid line range: end line cannot be less than start line"),
+				)
+				mockCline.ask.mockResolvedValueOnce({ response: "yesButtonClicked" })
+
+				let result: string | undefined
+				await readFileTool(
+					mockCline,
+					toolUse,
+					mockCline.ask,
+					jest.fn(),
+					(r: string) => {
+						result = r
+					},
+					(param: string, value: string) => value,
+				)
+
+				expect(result).toBe(
+					`<files>\n<file><path>src/app.ts</path><error>Error reading file: Invalid line range: end line cannot be less than start line</error></file>\n</files>`,
+				)
+			})
+
+			it("should handle NaN line values", async () => {
+				const toolUse: ReadFileToolUse = {
+					type: "tool_use",
+					name: "read_file",
+					params: {
+						args: `<file><path>src/app.ts</path><line_range>abc-def</line_range></file>`,
+					},
+					partial: false,
+				}
+
+				const { readFileTool } = require("../tools/readFileTool")
+
+				;(countFileLines as jest.Mock).mockResolvedValue(10)
+				;(readLines as jest.Mock).mockRejectedValue(new Error("Invalid line range values"))
+				mockCline.ask.mockResolvedValueOnce({ response: "yesButtonClicked" })
+
+				let result: string | undefined
+				await readFileTool(
+					mockCline,
+					toolUse,
+					mockCline.ask,
+					jest.fn(),
+					(r: string) => {
+						result = r
+					},
+					(param: string, value: string) => value,
+				)
+
+				expect(result).toBe(
+					`<files>\n<file><path>src/app.ts</path><error>Error reading file: Invalid line range values</error></file>\n</files>`,
+				)
+			})
+		})
+
+		describe("Multiple File States", () => {
+			it("should handle mixed approval states", async () => {
+				const toolUse: ReadFileToolUse = {
+					type: "tool_use",
+					name: "read_file",
+					params: {
+						args: `<file><path>src/app.ts</path></file><file><path>src/blocked.ts</path></file>`,
+					},
+					partial: false,
+				}
+
+				const { readFileTool } = require("../tools/readFileTool")
+
+				;(countFileLines as jest.Mock).mockResolvedValue(10)
+
+				// First file approved
+				mockCline.ask.mockResolvedValueOnce({
+					response: "yesButtonClicked",
+					text: "First approved",
+				})
+
+				// Second file denied
+				mockCline.ask.mockResolvedValueOnce({
+					response: "noButtonClicked",
+					text: "Second denied",
+				})
+
+				let result: string | undefined
+				await readFileTool(
+					mockCline,
+					toolUse,
+					mockCline.ask,
+					jest.fn(),
+					(r: string) => {
+						result = r
+					},
+					(param: string, value: string) => value,
+				)
+
+				const expectedXml = `<files>\n<file><path>src/app.ts</path>\n<content lines="1-10">\n1 | Test content</content>\n</file>\n<file><path>src/blocked.ts</path><status>Denied by user</status></file>\n</files>`
+				expect(result).toBe(
+					`The user denied this operation and provided the following feedback:\n<feedback>\nSecond denied\n</feedback>\n${expectedXml}`,
+				)
+				expect(mockCline.didRejectTool).toBe(true)
+			})
+		})
 	})
 
 	describe("Performance Edge Cases", () => {
@@ -490,6 +702,12 @@ describe("read_file tool functionality", () => {
 
 			;(countFileLines as jest.Mock).mockResolvedValue(1000000)
 			;(readLines as jest.Mock).mockResolvedValue("First 500 lines")
+			;(addLineNumbers as jest.Mock).mockReturnValue("1 | First 500 lines")
+			mockCline.ask.mockResolvedValueOnce({
+				response: "yesButtonClicked",
+				text: "Looks good!",
+				images: ["image1.png"],
+			})
 
 			let result: string | undefined
 			await readFileTool(
@@ -503,7 +721,10 @@ describe("read_file tool functionality", () => {
 				(param: string, value: string) => value,
 			)
 
-			expect(result).toContain("<notice>Showing only 500 of 1000000 total lines")
+			const expectedXml = `<files>\n<file><path>huge.log</path>\n<content lines="1-500">\n1 | First 500 lines</content>\n<notice>Showing only 500 of 1000000 total lines. Use line_range if you need to read more lines</notice>\n</file>\n</files>`
+			expect(result).toBe(
+				`The tool was approved with feedback:\n<feedback>\nLooks good!\n</feedback>\n${expectedXml}`,
+			)
 			expect(extractTextFromFile).not.toHaveBeenCalled()
 			expect(readLines).toHaveBeenCalled()
 		})
