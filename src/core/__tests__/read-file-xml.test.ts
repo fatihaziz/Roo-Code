@@ -10,6 +10,8 @@ import { isBinaryFile } from "isbinaryfile"
 import { ReadFileToolUse } from "../../shared/tools"
 import { formatResponse } from "../prompts/responses"
 
+jest.mock("../prompts/responses")
+
 // Mock dependencies
 jest.mock("../../integrations/misc/line-counter")
 jest.mock("../../integrations/misc/read-lines")
@@ -25,7 +27,7 @@ jest.mock("../../integrations/misc/extract-text", () => {
 		}),
 		addLineNumbers: jest.fn().mockImplementation((text: string, startLine = 1) => {
 			if (!text) return ""
-			const lines = text.split("\n")
+			const lines = typeof text === "string" ? text.split("\n") : [text]
 			return lines.map((line: string, i: number) => `${startLine + i} | ${line}`).join("\n")
 		}),
 	}
@@ -64,6 +66,9 @@ jest.mock("path", () => {
 })
 
 describe("read_file tool XML output structure", () => {
+	// Add new test data for feedback messages
+	const feedbackMessage = "Test feedback message"
+	const feedbackImages = ["image1.png", "image2.png"]
 	// Test data
 	const testFilePath = "test/file.txt"
 	const absoluteFilePath = "/test/file.txt"
@@ -184,6 +189,57 @@ describe("read_file tool XML output structure", () => {
 	}
 
 	describe("Basic XML Structure Tests", () => {
+		it("should format feedback messages correctly in XML", async () => {
+			// Setup
+			mockCline.ask.mockResolvedValueOnce({
+				response: "yesButtonClicked",
+				text: feedbackMessage,
+				images: feedbackImages,
+			})
+			mockedExtractTextFromFile.mockResolvedValue("1 | Test content")
+			mockedCountFileLines.mockResolvedValue(1)
+			;(formatResponse.toolApprovedWithFeedback as jest.Mock).mockReturnValue(
+				`The tool was approved with feedback:\n<feedback>\n${feedbackMessage}\n</feedback>`,
+			)
+			;(formatResponse.toolResult as jest.Mock).mockReturnValue(
+				`The tool was approved with feedback:\n<feedback>\n${feedbackMessage}\n</feedback>\n<files>\n<file><path>test/file.txt</path>\n<content lines="1-1">\n1 | Test content</content>\n</file>\n</files>`,
+			)
+
+			// Execute
+			const result = await executeReadFileTool()
+
+			// Verify feedback is properly formatted
+			expect(result).toContain(
+				`The tool was approved with feedback:\n<feedback>\n${feedbackMessage}\n</feedback>`,
+			)
+			expect(result).toContain('<content lines="1-1">\n1 | Test content</content>')
+		})
+
+		it("should handle XML special characters in feedback", async () => {
+			// Setup
+			const feedbackWithSpecialChars = "Feedback with <tags> & symbols"
+			mockCline.ask.mockResolvedValueOnce({
+				response: "yesButtonClicked",
+				text: feedbackWithSpecialChars,
+				images: feedbackImages,
+			})
+			mockedExtractTextFromFile.mockResolvedValue("1 | Test content")
+			mockedCountFileLines.mockResolvedValue(1)
+			;(formatResponse.toolApprovedWithFeedback as jest.Mock).mockReturnValue(
+				`The tool was approved with feedback:\n<feedback>\n${feedbackWithSpecialChars}\n</feedback>`,
+			)
+			;(formatResponse.toolResult as jest.Mock).mockReturnValue(
+				`The tool was approved with feedback:\n<feedback>\n${feedbackWithSpecialChars}\n</feedback>`,
+			)
+
+			// Execute
+			const result = await executeReadFileTool()
+
+			// Verify special characters are preserved
+			expect(result).toContain(
+				`The tool was approved with feedback:\n<feedback>\n${feedbackWithSpecialChars}\n</feedback>`,
+			)
+		})
 		it("should produce XML output with no unnecessary indentation", async () => {
 			// Setup
 			const numberedContent = "1 | Line 1\n2 | Line 2\n3 | Line 3\n4 | Line 4\n5 | Line 5"
@@ -426,6 +482,57 @@ describe("read_file tool XML output structure", () => {
 	})
 
 	describe("Error Handling Tests", () => {
+		it("should format status tags correctly", async () => {
+			// Setup
+			mockCline.ask.mockResolvedValueOnce({
+				response: "noButtonClicked",
+				text: "Access denied",
+			})
+
+			// Execute
+			const result = await executeReadFileTool({}, { validateAccess: true })
+
+			// Verify status tag format
+			expect(result).toContain("<status>Denied by user</status>")
+			expect(result).toMatch(/<file>.*<status>.*<\/status>.*<\/file>/s)
+		})
+
+		it("should format multiple status types correctly", async () => {
+			// Setup
+			// Mock different status responses
+			mockCline.ask
+				.mockResolvedValueOnce({
+					response: "yesButtonClicked",
+					text: "First approved",
+				})
+				.mockResolvedValueOnce({
+					response: "noButtonClicked",
+					text: "Second denied",
+				})
+
+			mockedExtractTextFromFile.mockImplementation((path) => {
+				if (path.includes("file1.txt")) {
+					return Promise.resolve("1 | Content 1")
+				}
+				throw new Error("Second file error")
+			})
+			;(formatResponse.toolDeniedWithFeedback as jest.Mock).mockReturnValue(
+				`The user denied this operation and provided the following feedback:\n<feedback>\nSecond denied\n</feedback>`,
+			)
+			;(formatResponse.toolResult as jest.Mock).mockReturnValue(
+				`The user denied this operation and provided the following feedback:\n<feedback>\nSecond denied\n</feedback>\n<files>\n<file><path>file1.txt</path><error>Error reading file: Second file error</error></file>\n<file><path>file2.txt</path><status>Denied by user</status></file>\n</files>`,
+			)
+
+			// Execute
+			const result = await executeReadFileTool({
+				args: `<file><path>file1.txt</path></file><file><path>file2.txt</path></file>`,
+			})
+
+			// Verify multiple status formats
+			expect(result).toContain("The user denied this operation and provided the following feedback:")
+			expect(result).toContain("<feedback>\nSecond denied\n</feedback>")
+			expect(result).toMatch(/<file>.*<status>Denied by user<\/status>.*<\/file>/s) // Denied file
+		})
 		it("should include error tag for invalid path", async () => {
 			// Setup - missing path parameter
 			const toolUse: ReadFileToolUse = {
@@ -488,6 +595,9 @@ describe("read_file tool XML output structure", () => {
 
 		it("should include error tag for RooIgnore error", async () => {
 			// Execute - skip addLineNumbers check as it returns early with an error
+			;(formatResponse.rooIgnoreError as jest.Mock).mockReturnValue(
+				`Access to ${testFilePath} is blocked by the .rooignore file settings. You must try to continue in the task without using this file, or ask the user to update the .rooignore file.`,
+			)
 			const result = await executeReadFileTool({}, { validateAccess: false })
 
 			// Verify
@@ -770,7 +880,7 @@ describe("read_file tool XML output structure", () => {
 			// Setup
 			const xmlContent = "<root><child>Test</child></root>"
 			mockInputContent = xmlContent
-			mockedExtractTextFromFile.mockResolvedValue(xmlContent)
+			mockedExtractTextFromFile.mockResolvedValue(`1 | ${xmlContent}`)
 
 			// Execute
 			const result = await executeReadFileTool()
