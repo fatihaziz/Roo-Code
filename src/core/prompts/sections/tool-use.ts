@@ -19,5 +19,10 @@ Example:
 <message>Implement a new feature for the application.</message>
 </new_task>
 
-Always use this format. No deviations.`
+<new_task>
+<mode>code</mode>
+<message>Implement a new feature for the application.</message>
+</new_task>
+
+Always adhere to this format for the tool use to ensure proper parsing and execution.`
 }
