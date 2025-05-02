@@ -26,6 +26,17 @@ interface FileEntry {
 	lineRanges?: LineRange[]
 }
 
+// New interface to track file processing state
+interface FileResult {
+	path: string
+	status: "approved" | "denied" | "blocked" | "error" | "pending"
+	content?: string
+	error?: string
+	notice?: string
+	lineRanges?: LineRange[]
+	xmlContent?: string // Final XML content for this file
+}
+
 export async function readFileTool(
 	cline: Cline,
 	block: ToolUse,
@@ -74,8 +85,6 @@ export async function readFileTool(
 		const parsed = parseXml(argsXmlTag) as any
 		const files = Array.isArray(parsed.file) ? parsed.file : [parsed.file].filter(Boolean)
 
-		console.log("Parsed files:", files)
-
 		for (const file of files) {
 			if (!file.path) continue
 
@@ -112,53 +121,68 @@ export async function readFileTool(
 		return
 	}
 
-	const results: string[] = []
+	// Create an array to track the state of each file
+	const fileResults: FileResult[] = fileEntries.map((entry) => ({
+		path: entry.path || "",
+		status: "pending",
+		lineRanges: entry.lineRanges,
+	}))
+
+	// Function to update file result status
+	const updateFileResult = (path: string, updates: Partial<FileResult>) => {
+		const index = fileResults.findIndex((result) => result.path === path)
+		if (index !== -1) {
+			fileResults[index] = { ...fileResults[index], ...updates }
+		}
+	}
 
 	try {
 		// First validate all files and get approvals
-		const blockedFiles = new Set<string>()
-		const approvedFiles = new Set<string>()
-
-		for (const entry of fileEntries) {
-			const relPath = entry.path || ""
+		for (const fileResult of fileResults) {
+			const relPath = fileResult.path
 			const fullPath = path.resolve(cline.cwd, relPath)
 
 			// Validate line ranges first
-			if (entry.lineRanges) {
-				for (const range of entry.lineRanges) {
+			if (fileResult.lineRanges) {
+				let hasRangeError = false
+				for (const range of fileResult.lineRanges) {
 					if (range.start > range.end) {
-						await handleFileError(
-							new Error("Invalid line range: end line cannot be less than start line"),
-							relPath,
-							fileEntries.length === 1,
-							results,
-							handleError,
-						)
-						blockedFiles.add(relPath)
+						const errorMsg = "Invalid line range: end line cannot be less than start line"
+						updateFileResult(relPath, {
+							status: "blocked",
+							error: errorMsg,
+							xmlContent: `<file><path>${relPath}</path><error>Error reading file: ${errorMsg}</error></file>`,
+						})
+						await handleError(`reading file ${relPath}`, new Error(errorMsg))
+						hasRangeError = true
 						break
 					}
 					if (isNaN(range.start) || isNaN(range.end)) {
-						await handleFileError(
-							new Error("Invalid line range values"),
-							relPath,
-							fileEntries.length === 1,
-							results,
-							handleError,
-						)
-						blockedFiles.add(relPath)
+						const errorMsg = "Invalid line range values"
+						updateFileResult(relPath, {
+							status: "blocked",
+							error: errorMsg,
+							xmlContent: `<file><path>${relPath}</path><error>Error reading file: ${errorMsg}</error></file>`,
+						})
+						await handleError(`reading file ${relPath}`, new Error(errorMsg))
+						hasRangeError = true
 						break
 					}
 				}
+				if (hasRangeError) continue
 			}
 
 			// Then check RooIgnore validation
-			if (!blockedFiles.has(relPath)) {
+			if (fileResult.status === "pending") {
 				const accessAllowed = cline.rooIgnoreController?.validateAccess(relPath)
 				if (!accessAllowed) {
 					await cline.say("rooignore_error", relPath)
 					const errorMsg = formatResponse.rooIgnoreError(relPath)
-					results.push(`<file><path>${relPath}</path><error>${errorMsg}</error></file>`)
-					blockedFiles.add(relPath)
+					updateFileResult(relPath, {
+						status: "blocked",
+						error: errorMsg,
+						xmlContent: `<file><path>${relPath}</path><error>${errorMsg}</error></file>`,
+					})
 					continue
 				}
 
@@ -168,8 +192,8 @@ export async function readFileTool(
 
 				// Create line snippet for approval message
 				let lineSnippet = ""
-				if (entry.lineRanges && entry.lineRanges.length > 0) {
-					const ranges = entry.lineRanges.map((range) =>
+				if (fileResult.lineRanges && fileResult.lineRanges.length > 0) {
+					const ranges = fileResult.lineRanges.map((range) =>
 						t("tools:readFile.linesRange", { start: range.start, end: range.end }),
 					)
 					lineSnippet = ranges.join(", ")
@@ -189,23 +213,25 @@ export async function readFileTool(
 
 				const didApprove = await askApproval("tool", completeMessage)
 				if (!didApprove) {
-					blockedFiles.add(relPath)
+					updateFileResult(relPath, {
+						status: "denied",
+						xmlContent: `<file><path>${relPath}</path><status>Denied by user</status></file>`,
+					})
 				} else {
-					approvedFiles.add(relPath)
+					updateFileResult(relPath, { status: "approved" })
 				}
 			}
 		}
 
 		// Then process only approved files
-		for (const entry of fileEntries) {
-			const relPath = entry.path || ""
-			const fullPath = path.resolve(cline.cwd, relPath)
-
+		for (const fileResult of fileResults) {
 			// Skip files that weren't approved
-			if (!approvedFiles.has(relPath)) {
+			if (fileResult.status !== "approved") {
 				continue
 			}
 
+			const relPath = fileResult.path
+			const fullPath = path.resolve(cline.cwd, relPath)
 			const { maxReadFileLine = 500 } = (await cline.providerRef.deref()?.getState()) ?? {}
 
 			// Process approved files
@@ -214,14 +240,17 @@ export async function readFileTool(
 
 				// Handle binary files
 				if (isBinary) {
-					results.push(`<file><path>${relPath}</path>\n<notice>Binary file</notice>\n</file>`)
+					updateFileResult(relPath, {
+						notice: "Binary file",
+						xmlContent: `<file><path>${relPath}</path>\n<notice>Binary file</notice>\n</file>`,
+					})
 					continue
 				}
 
 				// Handle range reads (bypass maxReadFileLine)
-				if (entry.lineRanges && entry.lineRanges.length > 0) {
+				if (fileResult.lineRanges && fileResult.lineRanges.length > 0) {
 					const rangeResults: string[] = []
-					for (const range of entry.lineRanges) {
+					for (const range of fileResult.lineRanges) {
 						const content = addLineNumbers(
 							await readLines(fullPath, range.end - 1, range.start - 1),
 							range.start,
@@ -229,7 +258,9 @@ export async function readFileTool(
 						const lineRangeAttr = ` lines="${range.start}-${range.end}"`
 						rangeResults.push(`<content${lineRangeAttr}>\n${content}</content>`)
 					}
-					results.push(`<file><path>${relPath}</path>\n${rangeResults.join("\n")}\n</file>`)
+					updateFileResult(relPath, {
+						xmlContent: `<file><path>${relPath}</path>\n${rangeResults.join("\n")}\n</file>`,
+					})
 					continue
 				}
 
@@ -237,9 +268,9 @@ export async function readFileTool(
 				if (maxReadFileLine === 0) {
 					const defResult = await parseSourceCodeDefinitionsForFile(fullPath, cline.rooIgnoreController)
 					if (defResult) {
-						results.push(
-							`<file><path>${relPath}</path>\n<list_code_definition_names>${defResult}</list_code_definition_names>\n</file>`,
-						)
+						updateFileResult(relPath, {
+							xmlContent: `<file><path>${relPath}</path>\n<list_code_definition_names>${defResult}</list_code_definition_names>\n</file>`,
+						})
 					}
 					continue
 				}
@@ -255,7 +286,9 @@ export async function readFileTool(
 						xmlInfo += `<list_code_definition_names>${defResult}</list_code_definition_names>\n`
 					}
 					xmlInfo += `<notice>Showing only ${maxReadFileLine} of ${totalLines} total lines. Use line_range if you need to read more lines</notice>\n`
-					results.push(`<file><path>${relPath}</path>\n${xmlInfo}</file>`)
+					updateFileResult(relPath, {
+						xmlContent: `<file><path>${relPath}</path>\n${xmlInfo}</file>`,
+					})
 					continue
 				}
 
@@ -271,32 +304,44 @@ export async function readFileTool(
 				// Track file read
 				await cline.getFileContextTracker().trackFileContext(relPath, "read_tool" as RecordSource)
 
-				results.push(`<file><path>${relPath}</path>\n${xmlInfo}</file>`)
+				updateFileResult(relPath, {
+					xmlContent: `<file><path>${relPath}</path>\n${xmlInfo}</file>`,
+				})
 			} catch (error) {
-				await handleFileError(error, relPath, fileEntries.length === 1, results, handleError)
+				const errorMsg = error instanceof Error ? error.message : String(error)
+				updateFileResult(relPath, {
+					status: "error",
+					error: `Error reading file: ${errorMsg}`,
+					xmlContent: `<file><path>${relPath}</path><error>Error reading file: ${errorMsg}</error></file>`,
+				})
+				await handleError(`reading file ${relPath}`, error instanceof Error ? error : new Error(errorMsg))
 			}
 		}
 
+		// Generate final XML result from all file results
+		const xmlResults = fileResults.filter((result) => result.xmlContent).map((result) => result.xmlContent)
+
 		// Push combined results
-		pushToolResult(`<files>\n${results.join("\n")}\n</files>`)
+		pushToolResult(`<files>\n${xmlResults.join("\n")}\n</files>`)
 	} catch (error) {
 		// Handle all errors using per-file format for consistency
 		const relPath = fileEntries[0]?.path || "unknown"
-		await handleFileError(error, relPath, false, results, handleError)
-		pushToolResult(`<files>\n${results.join("\n")}\n</files>`)
-	}
-}
+		const errorMsg = error instanceof Error ? error.message : String(error)
 
-// Error handling function
-async function handleFileError(
-	error: unknown,
-	relPath: string,
-	isOnlyFile: boolean,
-	results: string[],
-	handleError: HandleError,
-): Promise<void> {
-	const errorMsg = error instanceof Error ? error.message : String(error)
-	// Always use per-file error format for consistency
-	results.push(`<file><path>${relPath}</path><error>Error reading file: ${errorMsg}</error></file>`)
-	await handleError(`reading file ${relPath}`, error instanceof Error ? error : new Error(errorMsg))
+		// If we have file results, update the first one with the error
+		if (fileResults.length > 0) {
+			updateFileResult(relPath, {
+				status: "error",
+				error: `Error reading file: ${errorMsg}`,
+				xmlContent: `<file><path>${relPath}</path><error>Error reading file: ${errorMsg}</error></file>`,
+			})
+		}
+
+		await handleError(`reading file ${relPath}`, error instanceof Error ? error : new Error(errorMsg))
+
+		// Generate final XML result from all file results
+		const xmlResults = fileResults.filter((result) => result.xmlContent).map((result) => result.xmlContent)
+
+		pushToolResult(`<files>\n${xmlResults.join("\n")}\n</files>`)
+	}
 }
