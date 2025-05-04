@@ -105,7 +105,7 @@ export const ContextManagementSettings = ({
 					<div className="flex items-center gap-2">
 						<Slider
 							min={1}
-							max={15}
+							max={100}
 							step={1}
 							value={[maxConcurrentFileReads ?? 5]}
 							onValueChange={([value]) => setCachedStateField("maxConcurrentFileReads", value)}
