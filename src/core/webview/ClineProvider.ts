@@ -1279,7 +1279,7 @@ export class ClineProvider extends EventEmitter<ClineProviderEvents> implements 
 			language: language ?? formatLanguage(vscode.env.language),
 			renderContext: this.renderContext,
 			maxReadFileLine: maxReadFileLine ?? 500,
-			maxConcurrentFileReads: maxConcurrentFileReads ?? 5,
+			maxConcurrentFileReads: maxConcurrentFileReads ?? 15,
 			settingsImportedAt: this.settingsImportedAt,
 			terminalCompressProgressBar: terminalCompressProgressBar ?? true,
 			hasSystemPromptOverride,
@@ -1373,7 +1373,7 @@ export class ClineProvider extends EventEmitter<ClineProviderEvents> implements 
 			telemetrySetting: stateValues.telemetrySetting || "unset",
 			showRooIgnoredFiles: stateValues.showRooIgnoredFiles ?? true,
 			maxReadFileLine: stateValues.maxReadFileLine ?? 500,
-			maxConcurrentFileReads: stateValues.maxConcurrentFileReads ?? 5,
+			maxConcurrentFileReads: stateValues.maxConcurrentFileReads ?? 15,
 			historyPreviewCollapsed: stateValues.historyPreviewCollapsed ?? false,
 		}
 	}
