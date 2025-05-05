@@ -293,8 +293,14 @@ export type CustomSupportPrompts = z.infer<typeof customSupportPromptsSchema>
 export const commandExecutionStatusSchema = z.discriminatedUnion("status", [
 	z.object({
 		executionId: z.string(),
-		status: z.literal("running"),
+		status: z.literal("started"),
 		pid: z.number().optional(),
+		command: z.string(),
+	}),
+	z.object({
+		executionId: z.string(),
+		status: z.literal("output"),
+		output: z.string(),
 	}),
 	z.object({
 		executionId: z.string(),
@@ -813,7 +819,6 @@ export type ClineSay = z.infer<typeof clineSaySchema>
  */
 
 export const toolProgressStatusSchema = z.object({
-	id: z.string().optional(),
 	icon: z.string().optional(),
 	text: z.string().optional(),
 })

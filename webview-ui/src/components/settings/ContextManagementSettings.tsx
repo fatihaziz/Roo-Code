@@ -105,13 +105,13 @@ export const ContextManagementSettings = ({
 					<div className="flex items-center gap-2">
 						<Slider
 							min={1}
-							max={15}
+							max={100}
 							step={1}
-							value={[maxConcurrentFileReads ?? 5]}
+							value={[maxConcurrentFileReads ?? 15]}
 							onValueChange={([value]) => setCachedStateField("maxConcurrentFileReads", value)}
 							data-testid="max-concurrent-file-reads-slider"
 						/>
-						<span className="w-10">{maxConcurrentFileReads ?? 5}</span>
+						<span className="w-10">{maxConcurrentFileReads ?? 15}</span>
 					</div>
 					<div className="text-vscode-descriptionForeground text-sm mt-1">
 						{t("settings:contextManagement.maxConcurrentFileReads.description")}
