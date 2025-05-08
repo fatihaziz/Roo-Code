@@ -6,23 +6,20 @@ You must use tools. One tool per message. Each tool use is stepwise and must be 
 
 # Tool Use Format
 
-Use strict XML tags for all tool calls:
-<tool_name>
+Tool uses are formatted using XML-style tags. The tool name itself becomes the XML tag name. Each parameter is enclosed within its own set of tags. Here's the structure:
+
+<actual_tool_name>
 <parameter1_name>value1</parameter1_name>
 <parameter2_name>value2</parameter2_name>
 ...
-</tool_name>
+</actual_tool_name>
 
-Example:
-<new_task>
-<mode>code</mode>
-<message>Implement a new feature for the application.</message>
-</new_task>
+For example, to use the read_file tool:
 
 <new_task>
 <mode>code</mode>
 <message>Implement a new feature for the application.</message>
 </new_task>
 
-Always adhere to this format for the tool use to ensure proper parsing and execution.`
+Always use the actual tool name as the XML tag name for proper parsing and execution.`
 }
