@@ -444,10 +444,10 @@
     "compile": "tsc -p . --outDir out && node esbuild.js",
     "dev": "cd webview-ui && npm run dev",
     "generate-types": "tsx scripts/generate-types.mts",
-    "install-e2e": "cd e2e && npm install",
-    "install-extension": "npm install",
-    "install-webview": "cd webview-ui && npm install",
-    "install:all": "npm install npm-run-all && npm-run-all -l -p install-*",
+    "install-e2e": "cd e2e && pnpm install",
+    "install-extension": "pnpm install",
+    "install-webview": "cd webview-ui && pnpm install",
+    "install:all": "pnpm install npm-run-all && npm-run-all -l -p install-*",
     "knip": "knip --include files",
     "lint": "npm-run-all -l -p lint:*",
     "lint:e2e": "cd e2e && npm run lint",
@@ -456,14 +456,14 @@
     "package": "npm-run-all -l -p build:webview build:esbuild check-types lint",
     "prepare": "husky",
     "pretest": "npm run compile",
-    "publish": "npm run build && changeset publish && npm install --package-lock-only",
+    "publish": "npm run build && changeset publish && pnpm install --package-lock-only",
     "publish:marketplace": "vsce publish && ovsx publish",
     "test": "npm-run-all test:*",
     "test:extension": "jest -w=40%",
     "test:extension-esm": "vitest run",
     "test:webview": "cd webview-ui && npm run test",
     "update-contributors": "node scripts/update-contributors.js",
-    "version-packages": "changeset version && npm install --package-lock-only",
+    "version-packages": "changeset version && pnpm install --package-lock-only",
     "vscode-test": "npm-run-all -l -p vscode-test:*",
     "vscode-test:extension": "tsc -p . --outDir out && node esbuild.js",
     "vscode-test:webview": "cd webview-ui && npm run build",
@@ -474,5 +474,5 @@
     "watch:esbuild": "node esbuild.js --watch",
     "watch:tsc": "tsc --noEmit --watch --project tsconfig.json"
   },
-  "version": "3.16.0"
+  "version": "3.16.3"
 }
