@@ -61,8 +61,7 @@ if (installResult.status !== 0) {
 
 // 5. Launch VS Code for development
 console.log("Step 5: Launching VS Code instance for development...")
-const cwd = process.cwd()
-const devArgs = ["--extensionDevelopmentPath", cwd]
+const devArgs = ["."] // Opens current directory in normal VS Code
 spawn(codeCmd, devArgs, { shell: true })
 
 console.log("VS Code instance launched. Test your extension there.")
